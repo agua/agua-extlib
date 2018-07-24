@@ -1,13 +1,11 @@
 use strict;
 use warnings;
-package Hook::LexWrap; # git description: v0.25-14-g33c34e7
-# vi: noet sts=8 sw=8 ts=8 :
+package Hook::LexWrap;
+# git description: v0.24-8-gd2290ba
+$Hook::LexWrap::VERSION = '0.25';
 # ABSTRACT: Lexically scoped subroutine wrappers
-# KEYWORDS: subroutine function modifier wrapper lexical scope
 
-our $VERSION = '0.26';
-
-use Carp ();
+use Carp;
 
 {
 no warnings 'redefine';
@@ -16,11 +14,7 @@ no warnings 'redefine';
 	my $i=1;
 	my $name_cache;
 	while (1) {
-		my @caller = CORE::caller() eq 'DB'
-			? do { package	# line break to foil [Git::Describe]
-				DB; CORE::caller($i++) }
-			: CORE::caller($i++);
-		return if not @caller;
+		my @caller = CORE::caller($i++) or return;
 		$caller[3] = $name_cache if $name_cache;
 		$name_cache = $caller[0] eq 'Hook::LexWrap' ? $caller[3] : '';
 		next if $name_cache || $height-- != 0;
@@ -41,9 +35,9 @@ sub wrap (*@) {  ## no critic Prototypes
 	        no strict 'refs';
 	        $original = ref $typeglob eq 'CODE' && $typeglob
 		     || *$typeglob{CODE}
-		     || Carp::croak "Can't wrap non-existent subroutine ", $typeglob;
+		     || croak "Can't wrap non-existent subroutine ", $typeglob;
 	}
-	Carp::croak "'$_' value is not a subroutine reference"
+	croak "'$_' value is not a subroutine reference"
 		foreach grep {$wrapper{$_} && ref $wrapper{$_} ne 'CODE'}
 			qw(pre post);
 	no warnings 'redefine';
@@ -84,7 +78,7 @@ sub wrap (*@) {  ## no critic Prototypes
 	};
 	ref $typeglob eq 'CODE' and return defined wantarray
 		? $imposter
-		: Carp::carp "Uselessly wrapped subroutine reference in void context";
+		: carp "Uselessly wrapped subroutine reference in void context";
 	{
 	        no strict 'refs';
 	        *{$typeglob} = $imposter;
@@ -93,8 +87,9 @@ sub wrap (*@) {  ## no critic Prototypes
 	return bless sub{ $unwrap=1 }, 'Hook::LexWrap::Cleanup';
 }
 
-package  # hide from PAUSE
-	Hook::LexWrap::Cleanup;
+package Hook::LexWrap::Cleanup;
+# git description: v0.24-8-gd2290ba
+$Hook::LexWrap::Cleanup::VERSION = '0.25';
 
 sub DESTROY { $_[0]->() }
 use overload 
@@ -117,7 +112,7 @@ Hook::LexWrap - Lexically scoped subroutine wrappers
 
 =head1 VERSION
 
-version 0.26
+version 0.25
 
 =head1 SYNOPSIS
 
@@ -323,42 +318,19 @@ subroutine reference.
 
 Schwern made me do this (by implying it wasn't possible ;-)
 
-=head1 SEE ALSO
-
-Sub::Prepend
-
 =head1 BUGS
 
 There are undoubtedly serious bugs lurking somewhere in code this funky :-)
 
 Bug reports and other feedback are most welcome.
 
-Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=Hook-LexWrap>
-(or L<bug-Hook-LexWrap@rt.cpan.org|mailto:bug-Hook-LexWrap@rt.cpan.org>).
+=head1 SEE ALSO
+
+Sub::Prepend
 
 =head1 AUTHOR
 
 Damian Conway <damian@conway.org>
-
-=head1 CONTRIBUTORS
-
-=for stopwords Karen Etheridge Alexandr Ciornii Father Chrysostomos
-
-=over 4
-
-=item *
-
-Karen Etheridge <ether@cpan.org>
-
-=item *
-
-Alexandr Ciornii <alexchorny@gmail.com>
-
-=item *
-
-Father Chrysostomos <sprout@cpan.org>
-
-=back
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -366,5 +338,25 @@ This software is copyright (c) 2001 by Damian Conway.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
+
+=head1 CONTRIBUTORS
+
+=for stopwords Alexandr Ciornii Karen Etheridge Father Chrysostomos
+
+=over 4
+
+=item *
+
+Alexandr Ciornii <alexchorny@gmail.com>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Father Chrysostomos <sprout@cpan.org>
+
+=back
 
 =cut

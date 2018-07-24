@@ -5,7 +5,6 @@ use warnings;
 
 use parent 'URI::ssh';
 
-our $VERSION = '1.72';
-$VERSION = eval $VERSION;
+our $VERSION = "1.69";
 
 1;

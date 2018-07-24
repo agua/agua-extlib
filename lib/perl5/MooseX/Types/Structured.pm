@@ -1,7 +1,7 @@
-package MooseX::Types::Structured; # git description: v0.35-8-gc2cf3da
+package MooseX::Types::Structured; # git description: v0.33-9-g3abcc09
 # ABSTRACT: Structured Type Constraints for Moose
 
-our $VERSION = '0.36';
+our $VERSION = '0.34';
 
 use 5.008;
 use Moose::Util::TypeConstraints 1.06 'find_type_constraint';
@@ -1015,7 +1015,7 @@ MooseX::Types::Structured - Structured Type Constraints for Moose
 
 =head1 VERSION
 
-version 0.36
+version 0.34
 
 =head1 SYNOPSIS
 
@@ -1709,17 +1709,6 @@ The following modules or resources may be of interest.
 L<Moose>, L<MooseX::Types>, L<Moose::Meta::TypeConstraint>,
 L<MooseX::Meta::TypeConstraint::Structured>
 
-=head1 SUPPORT
-
-Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-Types-Structured>
-(or L<bug-MooseX-Types-Structured@rt.cpan.org|mailto:bug-MooseX-Types-Structured@rt.cpan.org>).
-
-There is also a mailing list available for users of this distribution, at
-L<http://lists.perl.org/list/moose.html>.
-
-There is also an irc channel available for users of this distribution, at
-L<C<#moose> on C<irc.perl.org>|irc://irc.perl.org/#moose>.
-
 =head1 AUTHORS
 
 =over 4
@@ -1748,7 +1737,7 @@ Robert Sedlacek <rs@474.at>
 
 =head1 CONTRIBUTORS
 
-=for stopwords Karen Etheridge Ricardo Signes Dave Rolsky Ansgar Burchardt Stevan Little arcanez Jesse Luehrs D. Ilmari Mannsåker
+=for stopwords Karen Etheridge Ricardo Signes Dave Rolsky Ansgar Burchardt Stevan Little arcanez Jesse Luehrs
 
 =over 4
 
@@ -1779,10 +1768,6 @@ arcanez <justin.d.hunter@gmail.com>
 =item *
 
 Jesse Luehrs <doy@tozt.net>
-
-=item *
-
-D. Ilmari Mannsåker <ilmari@cpan.org>
 
 =back
 

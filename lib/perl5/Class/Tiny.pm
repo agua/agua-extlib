@@ -6,7 +6,7 @@ use warnings;
 package Class::Tiny;
 # ABSTRACT: Minimalist class construction
 
-our $VERSION = '1.006';
+our $VERSION = '1.001';
 
 use Carp ();
 
@@ -36,61 +36,26 @@ sub create_attributes {
           or Carp::croak "Invalid accessor name '$_'"
     } keys %defaults;
     $CLASS_ATTRIBUTES{$pkg}{$_} = $defaults{$_} for @attr;
-    $class->_gen_accessor( $pkg, $_ ) for grep { !*{"$pkg\::$_"}{CODE} } @attr;
+    _gen_accessor( $pkg, $_ ) for grep { !*{"$pkg\::$_"}{CODE} } @attr;
     Carp::croak("Failed to generate attributes for $pkg: $@\n") if $@;
 }
 
 sub _gen_accessor {
-    my ( $class, $pkg, $name ) = @_;
+    my ( $pkg, $name ) = @_;
     my $outer_default = $CLASS_ATTRIBUTES{$pkg}{$name};
 
-    my $sub =
-      $class->__gen_sub_body( $name, defined($outer_default), ref($outer_default) );
+    my $sub = "sub $name { if (\@_ == 1) {";
+    if ( defined $outer_default && ref $outer_default eq 'CODE' ) {
+        $sub .= "if ( !exists \$_[0]{$name} ) { \$_[0]{$name} = \$default->(\$_[0]) }";
+    }
+    elsif ( defined $outer_default ) {
+        $sub .= "if ( !exists \$_[0]{$name} ) { \$_[0]{$name} = \$default }";
+    }
+    $sub .= "return \$_[0]{$name} } else { return \$_[0]{$name}=\$_[1] } }";
 
     # default = outer_default avoids "won't stay shared" bug
     eval "package $pkg; my \$default=\$outer_default; $sub"; ## no critic
     Carp::croak("Failed to generate attributes for $pkg: $@\n") if $@;
-}
-
-# NOTE: overriding __gen_sub_body in a subclass of Class::Tiny is risky and
-# could break if the internals of Class::Tiny need to change for any
-# reason.  That said, I currently see no reason why this would be likely to
-# change.
-#
-# The generated sub body should assume that a '$default' variable will be
-# in scope (i.e. when the sub is evaluated) with any default value/coderef
-sub __gen_sub_body {
-    my ( $self, $name, $has_default, $default_type ) = @_;
-
-    if ( $has_default && $default_type eq 'CODE' ) {
-        return << "HERE";
-sub $name {
-    return (
-          ( \@_ == 1 && exists \$_[0]{$name} )
-        ? ( \$_[0]{$name} )
-        : ( \$_[0]{$name} = ( \@_ == 2 ) ? \$_[1] : \$default->( \$_[0] ) )
-    );
-}
-HERE
-    }
-    elsif ($has_default) {
-        return << "HERE";
-sub $name {
-    return (
-          ( \@_ == 1 && exists \$_[0]{$name} )
-        ? ( \$_[0]{$name} )
-        : ( \$_[0]{$name} = ( \@_ == 2 ) ? \$_[1] : \$default )
-    );
-}
-HERE
-    }
-    else {
-        return << "HERE";
-sub $name {
-    return \@_ == 1 ? \$_[0]{$name} : ( \$_[0]{$name} =  \$_[1] );
-}
-HERE
-    }
 }
 
 sub get_all_attributes_for {
@@ -115,7 +80,7 @@ sub get_all_attribute_defaults_for {
 package Class::Tiny::Object;
 # ABSTRACT: Base class for classes built with Class::Tiny
 
-our $VERSION = '1.006';
+our $VERSION = '1.001';
 
 my ( %HAS_BUILDARGS, %BUILD_CACHE, %DEMOLISH_CACHE, %ATTR_CACHE );
 
@@ -211,7 +176,7 @@ Class::Tiny - Minimalist class construction
 
 =head1 VERSION
 
-version 1.006
+version 1.001
 
 =head1 SYNOPSIS
 
@@ -586,7 +551,7 @@ David Golden <dagolden@cpan.org>
 
 =head1 CONTRIBUTORS
 
-=for stopwords Dagfinn Ilmari Mannsåker David Golden Gelu Lupas Karen Etheridge Olivier Mengué Toby Inkster
+=for stopwords Dagfinn Ilmari Mannsåker Gelu Lupas Karen Etheridge Matt S Trout Olivier Mengué Toby Inkster
 
 =over 4
 
@@ -596,15 +561,15 @@ Dagfinn Ilmari Mannsåker <ilmari@ilmari.org>
 
 =item *
 
-David Golden <xdg@xdg.me>
-
-=item *
-
 Gelu Lupas <gelu@devnull.ro>
 
 =item *
 
 Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Matt S Trout <mstrout@cpan.org>
 
 =item *
 

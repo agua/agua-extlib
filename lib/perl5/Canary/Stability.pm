@@ -23,13 +23,12 @@ See the F<Makefile.PL> in L<Coro> or L<AnyEvent> for usage examples.
 package Canary::Stability;
 
 BEGIN {
-   $VERSION = 2012;
+   $VERSION = 2006;
 }
 
 sub sgr {
    # we just assume ANSI almost everywhere
    # red 31, yellow 33, green 32
-   local $| = 1;
 
    $ENV{PERL_CANARY_STABILITY_COLOUR} ne 0
    and ((-t STDOUT and length $ENV{TERM}) or $ENV{PERL_CANARY_STABILITY_COLOUR})
@@ -44,39 +43,11 @@ sub import {
 
    $minperl ||= 5.008002;
 
-   print <<EOF;
-
-***
-*** Canary::Stability COMPATIBILITY AND SUPPORT CHECK
-*** =================================================
-***
-*** Hi!
-***
-*** I do my best to provide predictable and reliable software.
-***
-*** However, in recent releases, P5P (who maintain perl) have been
-*** introducing regressions that are sometimes subtle and at other times
-*** catastrophic, often for personal preferences with little or no concern
-*** for existing code, most notably CPAN.
-***
-*** For this reason, it has become very hard for me to maintain the level
-*** of reliability and support I have committed myself to in the past, at
-*** least with some perl versions: I simply can't keep up working around new
-*** bugs or gratituous incompatibilities, and in turn you might suffer from
-*** unanticipated problems.
-***
-*** Therefore I have introduced a support and compatibility check, the results
-*** of which follow below, together with a FAQ and some recommendations.
-***
-*** This check is just to let you know that there might be a risk, so you can
-*** make judgement calls on how to proceed - it will not keep the module from
-*** installing or working.
-***
-EOF
-
    if ($minvers > $VERSION) {
       sgr 33;
       print <<EOF;
+
+***
 *** The stability canary says: (nothing, it died of old age).
 ***
 *** Your Canary::Stability module (used by $distname) is too old.
@@ -85,17 +56,23 @@ EOF
 *** status testing, you might also not want to care at all, and all will
 *** be well as long $distname works well enough for you, as the stability
 *** canary is only used when installing the distribution.
+***
+
 EOF
    } elsif ($] < $minperl) {
 
       sgr 33;
       print <<EOF;
+
+***
 *** The stability canary says: chirp (it seems concerned about something).
 ***
 *** Your perl version ($]) is older than the $distname distribution
 *** likes ($minperl). This is not a fatal problem - the module might work
 *** well with your version of perl, but it does mean the author likely
 *** won't do anything to make it work if it breaks.
+***
+
 EOF
    } elsif (defined $Internals::StabilityBranchVersion) {
       # note to people studying this modules sources:
@@ -104,23 +81,33 @@ EOF
 
       sgr 32;
       print <<EOF;
+
+***
 *** The stability canary says: chirp! chirp! (it seems to be quite excited)
 ***
 *** It seems you are running schmorp's stability branch of perl.
 *** All should be well, and if it isn't, you should report this as a bug
 *** to the $distname author.
+***
+
 EOF
    } elsif ($] < 5.021) {
       #sgr 32;
       print <<EOF;
+
+***
 *** The stability canary says: chirp! chirp! (it seems to be quite happy)
 ***
 *** Your version of perl ($]) is quite supported by $distname, nothing
 *** else to be said, hope it comes in handy.
+***
+
 EOF
    } else {
       sgr 31;
       print <<EOF;
+
+***
 *** The stability canary says: (nothing, it was driven away by harsh weather)
 ***
 *** It seems you are running perl version $], likely the "official" or
@@ -131,10 +118,10 @@ EOF
 *** stability branch.
 ***
 *** If everything works fine, you can ignore this message.
+***
 EOF
       sgr 0;
       print <<EOF;
-***
 *** Stability canary mini-FAQ:
 ***
 *** Do I need to do anything?

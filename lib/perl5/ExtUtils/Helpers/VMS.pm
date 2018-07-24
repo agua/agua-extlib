@@ -1,11 +1,12 @@
 package ExtUtils::Helpers::VMS;
-$ExtUtils::Helpers::VMS::VERSION = '0.026';
+$ExtUtils::Helpers::VMS::VERSION = '0.022';
 use strict;
 use warnings FATAL => 'all';
 
 use Exporter 5.57 'import';
-our @EXPORT = qw/make_executable detildefy/;
+our @EXPORT = qw/make_executable split_like_shell detildefy/;
 
+use ExtUtils::Helpers::Unix qw/split_like_shell/; # Probably very wrong, but whatever
 use File::Copy qw/copy/;
 
 sub make_executable {
@@ -61,15 +62,26 @@ sub detildefy {
 		my @hdirs = File::Spec::Unix->splitdir($hdir);
 		my @dirs = File::Spec::Unix->splitdir($dir);
 
-		unless ($arg =~ m#^~/#) {
-			# There is a home directory after the tilde, but it will already
-			# be present in in @hdirs so we need to remove it by from @dirs.
+		my $newdirs;
 
-			shift @dirs;
+		# Two cases of tilde handling
+		if ($arg =~ m#^~/#) {
+
+			# Simple case, just merge together
+			$newdirs = File::Spec::Unix->catdir(@hdirs, @dirs);
+
+		} else {
+
+			# Complex case, need to add an updir - No delimiters
+			my @backup = File::Spec::Unix->splitdir(File::Spec::Unix->updir);
+
+			$newdirs = File::Spec::Unix->catdir(@hdirs, @backup, @dirs);
+
 		}
-		my $newdirs = File::Spec::Unix->catdir(@hdirs, @dirs);
 
+		# Now put the two cases back together
 		$arg = File::Spec::Unix->catpath($hvol, $newdirs, $file);
+
 	}
 	return $arg;
 }
@@ -88,7 +100,7 @@ ExtUtils::Helpers::VMS - VMS specific helper bits
 
 =head1 VERSION
 
-version 0.026
+version 0.022
 
 =for Pod::Coverage make_executable
 detildefy

@@ -1,11 +1,11 @@
 use strict;
 use warnings;
 
-package namespace::autoclean; # git description: 0.27-4-g47c7088
+package namespace::autoclean; # git description: 0.25-3-g42ee123
 # ABSTRACT: Keep imports out of your namespace
 # KEYWORDS: namespaces clean dirty imports exports subroutines methods development
 
-our $VERSION = '0.28';
+our $VERSION = '0.26';
 
 use B::Hooks::EndOfScope 0.12;
 use List::Util qw( first );
@@ -225,7 +225,7 @@ namespace::autoclean - Keep imports out of your namespace
 
 =head1 VERSION
 
-version 0.28
+version 0.26
 
 =head1 SYNOPSIS
 
@@ -378,17 +378,6 @@ L<Dist::Zilla::Plugin::Test::CleanNamespaces>
 
 =back
 
-=head1 SUPPORT
-
-Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=namespace-autoclean>
-(or L<bug-namespace-autoclean@rt.cpan.org|mailto:bug-namespace-autoclean@rt.cpan.org>).
-
-There is also a mailing list available for users of this distribution, at
-L<http://lists.perl.org/list/moose.html>.
-
-There is also an irc channel available for users of this distribution, at
-irc://irc.perl.org/#moose.
-
 =head1 AUTHOR
 
 Florian Ragwitz <rafl@debian.org>
@@ -437,7 +426,7 @@ Andrew Rodland <andrew@hbslabs.com>
 
 =back
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 This software is copyright (c) 2009 by Florian Ragwitz.
 

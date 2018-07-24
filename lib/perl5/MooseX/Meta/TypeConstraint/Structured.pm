@@ -2,8 +2,6 @@ package ## Hide from PAUSE
  MooseX::Meta::TypeConstraint::Structured;
 # ABSTRACT: Structured type constraints
 
-our $VERSION = '0.36';
-
 use Moose;
 use Devel::PartialDump;
 use MooseX::Meta::TypeCoercion::Structured;
@@ -115,8 +113,11 @@ sub generate_constraint_for {
     return $self->constraint_generator->($self, $type_constraints);
 }
 
-#pod =for :prelude
+#pod =begin :prelude
+#pod
 #pod =for stopwords parameterize
+#pod
+#pod =end :prelude
 #pod
 #pod =method parameterize (@type_constraints)
 #pod
@@ -369,7 +370,7 @@ MooseX::Meta::TypeConstraint::Structured - Structured type constraints
 
 =head1 VERSION
 
-version 0.36
+version 0.34
 
 =for stopwords parameterize
 
@@ -452,17 +453,6 @@ user servicable, you'll never call this directly.
 The following modules or resources may be of interest.
 
 L<Moose>, L<Moose::Meta::TypeConstraint>
-
-=head1 SUPPORT
-
-Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-Types-Structured>
-(or L<bug-MooseX-Types-Structured@rt.cpan.org|mailto:bug-MooseX-Types-Structured@rt.cpan.org>).
-
-There is also a mailing list available for users of this distribution, at
-L<http://lists.perl.org/list/moose.html>.
-
-There is also an irc channel available for users of this distribution, at
-L<C<#moose> on C<irc.perl.org>|irc://irc.perl.org/#moose>.
 
 =head1 AUTHORS
 

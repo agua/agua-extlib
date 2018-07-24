@@ -1,12 +1,9 @@
 package DateTime::TimeZone;
-
-use 5.008004;
+$DateTime::TimeZone::VERSION = '1.93';
+use 5.006;
 
 use strict;
 use warnings;
-use namespace::autoclean;
-
-our $VERSION = '2.15';
 
 use DateTime::TimeZone::Catalog;
 use DateTime::TimeZone::Floating;
@@ -15,12 +12,9 @@ use DateTime::TimeZone::OffsetOnly;
 use DateTime::TimeZone::OlsonDB::Change;
 use DateTime::TimeZone::UTC;
 use Module::Runtime qw( require_module );
-use Params::ValidationCompiler 0.13 qw( validation_for );
-use Specio::Library::Builtins;
-use Specio::Library::String;
+use Params::Validate 0.72 qw( validate validate_pos SCALAR ARRAYREF BOOLEAN );
 use Try::Tiny;
 
-## no critic (ValuesAndExpressions::ProhibitConstantPragma)
 use constant INFINITY => 100**1000;
 use constant NEG_INFINITY => -1 * ( 100**1000 );
 
@@ -36,140 +30,114 @@ use constant SHORT_NAME  => 6;
 my %SpecialName = map { $_ => 1 }
     qw( EST MST HST CET EET MET WET EST5EDT CST6CDT MST7MDT PST8PDT );
 
-{
-    my $validator = validation_for(
-        name             => '_check_new_params',
-        name_is_optional => 1,
-        params           => {
-            name => {
-                type => t('NonEmptyStr'),
-            },
-        },
+sub new {
+    my $class = shift;
+    my %p     = validate(
+        @_,
+        { name => { type => SCALAR } },
     );
 
-    sub new {
-        shift;
-        my %p = $validator->(@_);
-
-        if ( exists $DateTime::TimeZone::Catalog::LINKS{ $p{name} } ) {
-            $p{name} = $DateTime::TimeZone::Catalog::LINKS{ $p{name} };
-        }
-        elsif ( exists $DateTime::TimeZone::Catalog::LINKS{ uc $p{name} } ) {
-            $p{name} = $DateTime::TimeZone::Catalog::LINKS{ uc $p{name} };
-        }
-
-        unless ( $p{name} =~ m{/}
-            || $SpecialName{ $p{name} } ) {
-            if ( $p{name} eq 'floating' ) {
-                return DateTime::TimeZone::Floating->instance;
-            }
-
-            if ( $p{name} eq 'local' ) {
-                return DateTime::TimeZone::Local->TimeZone();
-            }
-
-            if ( $p{name} eq 'UTC' || $p{name} eq 'Z' ) {
-                return DateTime::TimeZone::UTC->instance;
-            }
-
-            return DateTime::TimeZone::OffsetOnly->new( offset => $p{name} );
-        }
-
-        my $subclass = $p{name};
-        $subclass =~ s{/}{::}g;
-        $subclass =~ s/-(\d)/_Minus$1/;
-        $subclass =~ s/\+/_Plus/;
-        $subclass =~ s/-/_/g;
-
-        my $real_class = "DateTime::TimeZone::$subclass";
-
-        die "The timezone '$p{name}' is an invalid name.\n"
-            unless $real_class =~ /^\w+(::\w+)*$/;
-
-        unless ( $real_class->can('instance') ) {
-            ($real_class)
-                = $real_class =~ m{\A([a-zA-Z0-9_]+(?:::[a-zA-Z0-9_]+)*)\z};
-
-            my $e;
-            try {
-                ## no critic (Variables::RequireInitializationForLocalVars)
-                local $SIG{__DIE__};
-                require_module($real_class);
-            }
-            catch {
-                $e = $_;
-            };
-
-            if ($e) {
-                my $regex = join '.', split /::/, $real_class;
-                $regex .= '\\.pm';
-
-                if ( $e =~ /^Can't locate $regex/i ) {
-                    die
-                        "The timezone '$p{name}' could not be loaded, or is an invalid name.\n";
-                }
-                else {
-                    die $e;
-                }
-            }
-        }
-
-        my $zone = $real_class->instance( name => $p{name}, is_olson => 1 );
-
-        if ( $zone->is_olson() ) {
-            my $object_version
-                = $zone->can('olson_version')
-                ? $zone->olson_version()
-                : 'unknown';
-            my $catalog_version = DateTime::TimeZone::Catalog->OlsonVersion();
-
-            if ( $object_version ne $catalog_version ) {
-                warn
-                    "Loaded $real_class, which is from a different version ($object_version) of the Olson database than this installation of DateTime::TimeZone ($catalog_version).\n";
-            }
-        }
-
-        return $zone;
+    if ( exists $DateTime::TimeZone::Catalog::LINKS{ $p{name} } ) {
+        $p{name} = $DateTime::TimeZone::Catalog::LINKS{ $p{name} };
     }
+    elsif ( exists $DateTime::TimeZone::Catalog::LINKS{ uc $p{name} } ) {
+        $p{name} = $DateTime::TimeZone::Catalog::LINKS{ uc $p{name} };
+    }
+
+    unless ( $p{name} =~ m{/}
+        || $SpecialName{ $p{name} } ) {
+        if ( $p{name} eq 'floating' ) {
+            return DateTime::TimeZone::Floating->instance;
+        }
+
+        if ( $p{name} eq 'local' ) {
+            return DateTime::TimeZone::Local->TimeZone();
+        }
+
+        if ( $p{name} eq 'UTC' || $p{name} eq 'Z' ) {
+            return DateTime::TimeZone::UTC->instance;
+        }
+
+        return DateTime::TimeZone::OffsetOnly->new( offset => $p{name} );
+    }
+
+    my $subclass = $p{name};
+    $subclass =~ s{/}{::}g;
+    $subclass =~ s/-(\d)/_Minus$1/;
+    $subclass =~ s/\+/_Plus/;
+    $subclass =~ s/-/_/g;
+
+    my $real_class = "DateTime::TimeZone::$subclass";
+
+    die "The timezone '$p{name}' is an invalid name.\n"
+        unless $real_class =~ /^\w+(::\w+)*$/;
+
+    unless ( $real_class->can('instance') ) {
+        ($real_class) = $real_class =~ m{\A([a-zA-Z0-9_]+(?:::[a-zA-Z0-9_]+)*)\z};
+
+        my $e;
+        try {
+            local $SIG{__DIE__};
+            require_module($real_class);
+        }
+        catch {
+            $e = $_;
+        };
+
+        if ($e) {
+            my $regex = join '.', split /::/, $real_class;
+            $regex .= '\\.pm';
+
+            if ( $e =~ /^Can't locate $regex/i ) {
+                die
+                    "The timezone '$p{name}' could not be loaded, or is an invalid name.\n";
+            }
+            else {
+                die $e;
+            }
+        }
+    }
+
+    my $zone = $real_class->instance( name => $p{name}, is_olson => 1 );
+
+    if ( $zone->is_olson() ) {
+        my $object_version
+            = $zone->can('olson_version')
+            ? $zone->olson_version()
+            : 'unknown';
+        my $catalog_version = DateTime::TimeZone::Catalog->OlsonVersion();
+
+        if ( $object_version ne $catalog_version ) {
+            warn
+                "Loaded $real_class, which is from a different version ($object_version) of the Olson database than this installation of DateTime::TimeZone ($catalog_version).\n";
+        }
+    }
+
+    return $zone;
 }
 
-{
-    my $validator = validation_for(
-        name             => '_check_init_params',
-        name_is_optional => 1,
-        params           => {
-            name => {
-                type => t('NonEmptyStr'),
-            },
-            spans => {
-                type => t('ArrayRef'),
-            },
-            is_olson => {
-                type    => t('Bool'),
-                default => 0,
-            },
+sub _init {
+    my $class = shift;
+    my %p     = validate(
+        @_, {
+            name     => { type => SCALAR },
+            spans    => { type => ARRAYREF },
+            is_olson => { type => BOOLEAN, default => 0 },
         },
     );
 
-    ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
-    sub _init {
-        my $class = shift;
-        my %p     = $validator->(@_);
+    my $self = bless {
+        name     => $p{name},
+        spans    => $p{spans},
+        is_olson => $p{is_olson},
+    }, $class;
 
-        my $self = bless {
-            name     => $p{name},
-            spans    => $p{spans},
-            is_olson => $p{is_olson},
-        }, $class;
-
-        foreach my $k (qw( last_offset last_observance rules max_year )) {
-            my $m = "_$k";
-            $self->{$k} = $self->$m() if $self->can($m);
-        }
-
-        return $self;
+    foreach my $k (qw( last_offset last_observance rules max_year )) {
+        my $m = "_$k";
+        $self->{$k} = $self->$m() if $self->can($m);
     }
-    ## use critic
+
+    return $self;
 }
 
 sub is_olson { $_[0]->{is_olson} }
@@ -222,17 +190,15 @@ sub _span_for_datetime {
     }
     else {
         my $until_year = $dt->utc_year + 1;
-        $span = $self->_generate_spans_until_match(
-            $until_year, $seconds,
-            $type
-        );
+        $span = $self->_generate_spans_until_match( $until_year, $seconds,
+            $type );
     }
 
     # This means someone gave a local time that doesn't exist
     # (like during a transition into savings time)
     unless ( defined $span ) {
         my $err = 'Invalid local time for date';
-        $err .= q{ } . $dt->iso8601 if $type eq 'utc';
+        $err .= ' ' . $dt->iso8601 if $type eq 'utc';
         $err .= ' in time zone: ' . $self->name;
         $err .= "\n";
 
@@ -323,10 +289,8 @@ sub _generate_next_span {
     # by looking two years out we can ensure that we will find at
     # least one more span.  Of course, I will no doubt be proved wrong
     # and this will cause errors.
-    $self->_generate_spans_until_match(
-        $self->{max_year} + 2,
-        $max_span->[UTC_END] + ( 366 * 86400 ), 'utc'
-    );
+    $self->_generate_spans_until_match( $self->{max_year} + 2,
+        $max_span->[UTC_END] + ( 366 * 86400 ), 'utc' );
 
     return $self->{spans}[ $last_idx + 1 ];
 }
@@ -340,7 +304,6 @@ sub _generate_spans_until_match {
     my @changes;
     my @rules = @{ $self->_rules };
     foreach my $year ( $self->{max_year} .. $generate_until_year ) {
-        ## no critic (ControlStructures::ProhibitCStyleForLoops)
         for ( my $x = 0; $x < @rules; $x++ ) {
             my $last_offset_from_std;
 
@@ -361,10 +324,8 @@ sub _generate_spans_until_match {
 
             my $rule = $rules[$x];
 
-            my $next = $rule->utc_start_datetime_for_year(
-                $year,
-                $self->{last_offset}, $last_offset_from_std
-            );
+            my $next = $rule->utc_start_datetime_for_year( $year,
+                $self->{last_offset}, $last_offset_from_std );
 
             # don't bother with changes we've seen already
             next if $next->utc_rd_as_seconds < $self->max_span->[UTC_END];
@@ -393,10 +354,14 @@ sub _generate_spans_until_match {
     my ( $start, $end ) = _keys_for_type($type);
 
     my $match;
-    ## no critic (ControlStructures::ProhibitCStyleForLoops)
     for ( my $x = 1; $x < @sorted; $x++ ) {
+        my $last_total_offset
+            = $x == 1
+            ? $self->max_span->[OFFSET]
+            : $sorted[ $x - 2 ]->total_offset;
+
         my $span = DateTime::TimeZone::OlsonDB::Change::two_changes_as_span(
-            @sorted[ $x - 1, $x ] );
+            @sorted[ $x - 1, $x ], $last_total_offset );
 
         $span = _span_as_array($span);
 
@@ -419,7 +384,7 @@ sub _span_as_array {
     [
         @{ $_[0] }{
             qw( utc_start utc_end local_start local_end offset is_dst short_name )
-        }
+            }
     ];
 }
 
@@ -437,7 +402,6 @@ sub is_valid_name {
     my $name  = shift;
 
     my $tz = try {
-        ## no critic (Variables::RequireInitializationForLocalVars)
         local $SIG{__DIE__};
         $class->new( name => $name );
     };
@@ -452,8 +416,8 @@ sub STORABLE_freeze {
 }
 
 sub STORABLE_thaw {
-    my $self = shift;
-    shift;
+    my $self       = shift;
+    my $cloning    = shift;
     my $serialized = shift;
 
     my $class = ref $self || $self;
@@ -477,7 +441,6 @@ sub STORABLE_thaw {
 sub offset_as_seconds {
     my $offset = shift;
     $offset = shift if try {
-        ## no critic (Variables::RequireInitializationForLocalVars)
         local $SIG{__DIE__};
         $offset->isa('DateTime::TimeZone');
     };
@@ -513,7 +476,6 @@ sub offset_as_seconds {
 sub offset_as_string {
     my $offset = shift;
     $offset = shift if try {
-        ## no critic (Variables::RequireInitializationForLocalVars)
         local $SIG{__DIE__};
         $offset->isa('DateTime::TimeZone');
     };
@@ -541,7 +503,8 @@ sub offset_as_string {
 # These methods all operate on data contained in the DateTime/TimeZone/Catalog.pm file.
 
 sub all_names {
-    return wantarray
+    return
+        wantarray
         ? @DateTime::TimeZone::Catalog::ALL
         : [@DateTime::TimeZone::Catalog::ALL];
 }
@@ -553,7 +516,8 @@ sub categories {
 }
 
 sub links {
-    return wantarray
+    return
+        wantarray
         ? %DateTime::TimeZone::Catalog::LINKS
         : {%DateTime::TimeZone::Catalog::LINKS};
 }
@@ -594,15 +558,13 @@ __END__
 
 =pod
 
-=encoding UTF-8
-
 =head1 NAME
 
 DateTime::TimeZone - Time zone object base class and factory
 
 =head1 VERSION
 
-version 2.15
+version 1.93
 
 =head1 SYNOPSIS
 
@@ -836,12 +798,14 @@ If you subclass C<DateTime::TimeZone>, you will inherit its hooks,
 which may not work for your module, so please test the interaction of
 your module with Storable.
 
-=head1 LOADING TIME ZONES IN A PRE-FORKING SYSTEM
+=head1 SUPPORT
 
-If you are running an application that does pre-forking (for example with
-Starman), then you should try to load all the time zones that you'll need in
-the parent process. Time zones are loaded on-demand, so loading them once in
-each child will waste memory that could otherwise be shared.
+Support for this module is provided via the datetime@perl.org email list. See
+http://datetime.perl.org/wiki/datetime/page/Mailing_List for details.
+
+Please submit bugs to the CPAN RT system at
+http://rt.cpan.org/NoAuth/ReportBug.html?Queue=datetime%3A%3Atimezone
+or via email at bug-datetime-timezone@rt.cpan.org.
 
 =head1 DONATIONS
 
@@ -881,47 +845,13 @@ two scripts that may be of interest to some people.  They are
 parse_olson and tests_from_zdump.  Please run them with the --help
 flag to see what they can be used for.
 
-=head1 SUPPORT
-
-Support for this module is provided via the datetime@perl.org email list. See
-http://datetime.perl.org/wiki/datetime/page/Mailing_List for details.
-
-Please submit bugs to the CPAN RT system at
-http://rt.cpan.org/NoAuth/ReportBug.html?Queue=datetime%3A%3Atimezone
-or via email at bug-datetime-timezone@rt.cpan.org.
-
-Bugs may be submitted at L<https://github.com/houseabsolute/DateTime-TimeZone/issues>.
-
-I am also usually active on IRC as 'autarch' on C<irc://irc.perl.org>.
-
-=head1 SOURCE
-
-The source code repository for DateTime-TimeZone can be found at L<https://github.com/houseabsolute/DateTime-TimeZone>.
-
-=head1 DONATIONS
-
-If you'd like to thank me for the work I've done on this module, please
-consider making a "donation" to me via PayPal. I spend a lot of free time
-creating free software, and would appreciate any support you'd care to offer.
-
-Please note that B<I am not suggesting that you must do this> in order for me
-to continue working on this particular software. I will continue to do so,
-inasmuch as I have in the past, for as long as it interests me.
-
-Similarly, a donation made in this way will probably not make me work on this
-software much more, unless I get so many donations that I can consider working
-on free software full time (let's all have a chuckle at that together).
-
-To donate, log into PayPal and send money to autarch@urth.org, or use the
-button at L<http://www.urth.org/~autarch/fs-donation.html>.
-
 =head1 AUTHOR
 
 Dave Rolsky <autarch@urth.org>
 
 =head1 CONTRIBUTORS
 
-=for stopwords Alexey Molchanov Alfie John Bron Gondwana Daisuke Maki David Pinkowitz Iain Truskett Jakub Wilk Joshua Hoblitt Karen Etheridge karupanerura Olaf Alders Peter Rabbitson Tom Wyant
+=for stopwords Alexey Molchanov Alfie John Daisuke Maki David Pinkowitz Iain Truskett Joshua Hoblitt Karen Etheridge Peter Rabbitson
 
 =over 4
 
@@ -932,10 +862,6 @@ Alexey Molchanov <alexey.molchanov@gmail.com>
 =item *
 
 Alfie John <alfiej@fastmail.fm>
-
-=item *
-
-Bron Gondwana <brong@fastmail.fm>
 
 =item *
 
@@ -951,10 +877,6 @@ Iain Truskett <deceased>
 
 =item *
 
-Jakub Wilk <jwilk@jwilk.net>
-
-=item *
-
 Joshua Hoblitt <jhoblitt@cpan.org>
 
 =item *
@@ -963,30 +885,15 @@ Karen Etheridge <ether@cpan.org>
 
 =item *
 
-karupanerura <karupa@cpan.org>
-
-=item *
-
-Olaf Alders <olaf@wundersolutions.com>
-
-=item *
-
 Peter Rabbitson <ribasushi@cpan.org>
-
-=item *
-
-Tom Wyant <wyant@cpan.org>
 
 =back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2017 by Dave Rolsky.
+This software is copyright (c) 2015 by Dave Rolsky.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
-
-The full text of the license can be found in the
-F<LICENSE> file included with this distribution.
 
 =cut

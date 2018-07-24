@@ -1,8 +1,6 @@
 package ## Hide from PAUSE
   MooseX::Meta::TypeCoercion::Structured::Optional;
 
-our $VERSION = '0.36';
-
 use Moose;
 extends 'Moose::Meta::TypeCoercion';
 

@@ -1,8 +1,5 @@
 package Method::Signatures::Types;
 
-use strict;
-use warnings;
-
 use Mouse::Util::TypeConstraints;
 
 subtype 'Inf',

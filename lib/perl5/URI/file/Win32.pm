@@ -7,8 +7,7 @@ use parent 'URI::file::Base';
 
 use URI::Escape qw(uri_unescape);
 
-our $VERSION = '1.72';
-$VERSION = eval $VERSION;
+our $VERSION = "1.69";
 
 sub _file_extract_authority
 {

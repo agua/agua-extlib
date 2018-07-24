@@ -1,9 +1,11 @@
 package HTTP::Response;
-$HTTP::Response::VERSION = '6.13';
+
 use strict;
 use warnings;
 
 use base 'HTTP::Message';
+
+our $VERSION = "6.10";
 
 use HTTP::Status ();
 
@@ -334,24 +336,19 @@ sub fresh_until
 
 1;
 
-=pod
 
-=encoding UTF-8
+__END__
 
 =head1 NAME
 
 HTTP::Response - HTTP style response message
-
-=head1 VERSION
-
-version 6.13
 
 =head1 SYNOPSIS
 
 Response objects are returned by the request() method of the C<LWP::UserAgent>:
 
     # ...
-    $response = $ua->request($request);
+    $response = $ua->request($request)
     if ($response->is_success) {
         print $response->decoded_content;
     }
@@ -638,21 +635,10 @@ description of freshness_lifetime().
 
 L<HTTP::Headers>, L<HTTP::Message>, L<HTTP::Status>, L<HTTP::Request>
 
-=head1 AUTHOR
+=head1 COPYRIGHT
 
-Gisle Aas <gisle@activestate.com>
+Copyright 1995-2004 Gisle Aas.
 
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 1994-2017 by Gisle Aas.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-=cut
-
-__END__
-
-
-#ABSTRACT: HTTP style response message
+This library is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
 

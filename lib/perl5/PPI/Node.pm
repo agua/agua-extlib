@@ -52,12 +52,12 @@ use strict;
 use Carp            ();
 use Scalar::Util    qw{refaddr};
 use List::MoreUtils ();
-use Params::Util    qw{_INSTANCE _CLASS _CODELIKE _NUMBER};
+use Params::Util    qw{_INSTANCE _CLASS _CODELIKE};
 use PPI::Element    ();
 
 use vars qw{$VERSION @ISA *_PARENT};
 BEGIN {
-	$VERSION = '1.236';
+	$VERSION = '1.220';
 	@ISA     = 'PPI::Element';
 	*_PARENT = *PPI::Element::_PARENT;
 }
@@ -247,10 +247,7 @@ element at that node.
 =cut
 
 sub child {
-	my ( $self, $index ) = @_;
-	PPI::Exception->throw( "method child() needs an index" )
-	  if not defined _NUMBER $index;
-	$self->{children}->[$index];
+	$_[0]->{children}->[$_[1]];
 }
 
 =pod
@@ -515,7 +512,7 @@ sub remove_child {
 	my $p   = List::MoreUtils::firstidx {
 		refaddr $_ == $key
 	} @{$self->{children}};
-	return undef if $p == -1;
+	return undef unless defined $p;
 
 	# Splice it out, and remove the child's parent entry
 	splice( @{$self->{children}}, $p, 1 );

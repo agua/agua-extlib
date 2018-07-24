@@ -1,10 +1,13 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use strict;
 use warnings;
 # PODNAME: moose-outdated
 
-# this script was generated with Dist::Zilla::Plugin::Conflicts 0.19
+# this script was generated with Dist::Zilla::Plugin::Conflicts 0.17
 
 use Getopt::Long;
 use Moose::Conflicts;

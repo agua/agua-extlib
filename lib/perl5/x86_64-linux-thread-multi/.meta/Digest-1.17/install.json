@@ -1,1 +1,0 @@
-{"provides":{"Digest::file":{"version":"1.16","file":"Digest/file.pm"},"Digest":{"version":"1.17","file":"Digest.pm"},"Digest::base":{"version":"1.16","file":"Digest/base.pm"}},"target":"Digest::base","version":"1.17","name":"Digest","dist":"Digest-1.17","pathname":"G/GA/GAAS/Digest-1.17.tar.gz"}

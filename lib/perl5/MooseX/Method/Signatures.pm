@@ -1,11 +1,11 @@
 use strict;
 use warnings;
 
-package MooseX::Method::Signatures; # git description: v0.48-15-gd03dfc1
-# ABSTRACT: (DEPRECATED) Method declarations with type constraints and no source filter
+package MooseX::Method::Signatures;
+# git description: v0.47-12-g2cd3471
+$MooseX::Method::Signatures::VERSION = '0.48';
+# ABSTRACT: DEPRECATED: Method declarations with type constraints and no source filter
 # KEYWORDS: moose extension method declaration signature prototype syntax sugar deprecated
-
-our $VERSION = '0.49';
 
 use Moose 0.89;
 use Devel::Declare 0.005011 ();
@@ -356,11 +356,11 @@ __END__
 
 =head1 NAME
 
-MooseX::Method::Signatures - (DEPRECATED) Method declarations with type constraints and no source filter
+MooseX::Method::Signatures - DEPRECATED: Method declarations with type constraints and no source filter
 
 =head1 VERSION
 
-version 0.49
+version 0.48
 
 =head1 SYNOPSIS
 
@@ -404,26 +404,6 @@ version 0.49
 
 Provides a proper method keyword, like "sub" but specifically for making methods
 and validating their arguments against Moose type constraints.
-
-=head1 DEPRECATION NOTICE
-
-=for stopwords mst
-
-=for comment rafl agreed we should have a warning, and mst wrote this for MooseX::Declare, but it applies equally well here:
-
-B<Warning:> MooseX::Method::Signatures and L<MooseX::Declare> are based on
-L<Devel::Declare>, a giant bag of crack originally implemented by mst with the
-goal of upsetting the perl core developers so much by its very existence that
-they implemented proper keyword handling in the core.
-
-As of perl5 version 14, this goal has been achieved, and modules such as
-L<Devel::CallParser>, L<Function::Parameters>, and L<Keyword::Simple> provide
-mechanisms to mangle perl syntax that don't require hallucinogenic drugs to
-interpret the error messages they produce.
-
-If you want to use declarative syntax in new code, please for the love
-of kittens get yourself a recent perl and look at L<Moops> and
-L<core signatures|perlsub/Signatures> instead.
 
 =head1 SIGNATURE SYNTAX
 
@@ -499,7 +479,7 @@ extra lexical variable to be created.
     # $baz is named, required, must be an integer, defaults to 42 and needs
     #      to be even and greater than 10
 
-=head1 CAVEATS AND NOTES
+=head1 BUGS, CAVEATS AND NOTES
 
 This module is as stable now, but this is not to say that it is entirely bug
 free. If you notice any odd behaviour (messages not being as good as they could
@@ -632,6 +612,26 @@ make sure that your C<with> declaration happens after any
 method/subroutine declarations that may have the same name as a
 method/subroutine within a role.
 
+=head1 WARNING
+
+=for stopwords mst
+
+=for comment rafl agreed we should have a warning, and mst wrote this for MooseX::Declare, but it applies equally well here:
+
+B<Warning:> MooseX::Method::Signatures and L<MooseX::Declare> are based on
+L<Devel::Declare>, a giant bag of crack originally implemented by mst with the
+goal of upsetting the perl core developers so much by its very existence that
+they implemented proper keyword handling in the core.
+
+As of perl5 version 14, this goal has been achieved, and modules such as
+L<Devel::CallParser>, L<Function::Parameters>, and L<Keyword::Simple> provide
+mechanisms to mangle perl syntax that don't require hallucinogenic drugs to
+interpret the error messages they produce.
+
+If you want to use declarative syntax in new code, please for the love
+of kittens get yourself a recent perl and look at L<Moops> and
+L<core signatures|perlsub/Signatures> instead.
+
 =head1 SEE ALSO
 
 =over 4
@@ -666,26 +666,20 @@ L<signatures>
 
 =back
 
-=head1 SUPPORT
-
-Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-Method-Signatures>
-(or L<bug-MooseX-Method-Signatures@rt.cpan.org|mailto:bug-MooseX-Method-Signatures@rt.cpan.org>).
-
-There is also a mailing list available for users of this distribution, at
-L<http://lists.perl.org/list/moose.html>.
-
-There is also an irc channel available for users of this distribution, at
-irc://irc.perl.org/#moose.
-
-I am also usually active on irc, as 'ether' at C<irc.perl.org>.
-
 =head1 AUTHOR
 
 Florian Ragwitz <rafl@debian.org>
 
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by Florian Ragwitz.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
 =head1 CONTRIBUTORS
 
-=for stopwords Karen Etheridge Ash Berlin Daniel Ruoso Justin Hunter Nicholas Perez Dagfinn Ilmari Mannsåker Rhesa Rozendaal Yanick Champoux Cory Watson Kent Fredric Lukas Mai Matt Kraai Jonathan Scott Duff Jesse Luehrs Hakim Cassimally Dave Rolsky Ricardo SIGNES Sebastian Willert Steffen Schwigon
+=for stopwords Karen Etheridge Ash Berlin Daniel Ruoso Nicholas Perez Yanick Champoux Cory Watson Justin Hunter Rhesa Rozendaal Hakim Cassimally Kent Fredric Lukas Mai Dagfinn Ilmari Mannsåker Matt Kraai Ricardo SIGNES Steffen Schwigon Dave Rolsky Jesse Luehrs Jonathan Rockway Scott Duff Maik Hentsche Sebastian Willert
 
 =over 4
 
@@ -703,19 +697,7 @@ Daniel Ruoso <daniel@ruoso.com>
 
 =item *
 
-Justin Hunter <justin.d.hunter@gmail.com>
-
-=item *
-
 Nicholas Perez <nperez@cpan.org>
-
-=item *
-
-Dagfinn Ilmari Mannsåker <ilmari@ilmari.org>
-
-=item *
-
-Rhesa Rozendaal <rhesa@cpan.org>
 
 =item *
 
@@ -727,6 +709,18 @@ Cory Watson <gphat@cpan.org>
 
 =item *
 
+Justin Hunter <justin.d.hunter@gmail.com>
+
+=item *
+
+Rhesa Rozendaal <rhesa@cpan.org>
+
+=item *
+
+Hakim Cassimally <osfameron@cpan.org>
+
+=item *
+
 Kent Fredric <kentfredric@gmail.com>
 
 =item *
@@ -735,23 +729,11 @@ Lukas Mai <l.mai@web.de>
 
 =item *
 
+Dagfinn Ilmari Mannsåker <ilmari@ilmari.org>
+
+=item *
+
 Matt Kraai <kraai@ftbfs.org>
-
-=item *
-
-Jonathan Scott Duff <duff@pobox.com>
-
-=item *
-
-Jesse Luehrs <doy@tozt.net>
-
-=item *
-
-Hakim Cassimally <osfameron@cpan.org>
-
-=item *
-
-Dave Rolsky <autarch@urth.org>
 
 =item *
 
@@ -759,19 +741,32 @@ Ricardo SIGNES <rjbs@cpan.org>
 
 =item *
 
-Sebastian Willert <willert@cpan.org>
+Steffen Schwigon <ss5@renormalist.net>
 
 =item *
 
-Steffen Schwigon <ss5@renormalist.net>
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Jonathan Rockway <jon@jrock.us>
+
+=item *
+
+Jonathan Scott Duff <duff@pobox.com>
+
+=item *
+
+Maik Hentsche <maik.hentsche@amd.com>
+
+=item *
+
+Sebastian Willert <willert@cpan.org>
 
 =back
-
-=head1 COPYRIGHT AND LICENCE
-
-This software is copyright (c) 2008 by Florian Ragwitz.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
 
 =cut

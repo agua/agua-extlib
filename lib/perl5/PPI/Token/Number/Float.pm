@@ -33,7 +33,7 @@ use PPI::Token::Number ();
 
 use vars qw{$VERSION @ISA};
 BEGIN {
-	$VERSION = '1.236';
+	$VERSION = '1.220';
 	@ISA     = 'PPI::Token::Number';
 }
 
@@ -98,11 +98,7 @@ sub __TOKENIZER__on_char {
 			return 1;
 		}
 	}
-
-	# perl seems to regard pretty much anything that's not strictly an exp num
-	# as float + stuff
-	my $char2 = substr $t->{line}, $t->{line_cursor}+1, 1;
-	if ("$char$char2" =~ /[eE][0-9+-]/) {
+	if ($char eq 'e' || $char eq 'E') {
 		$t->{class} = $t->{token}->set_class( 'Number::Exp' );
 		return 1;
 	}

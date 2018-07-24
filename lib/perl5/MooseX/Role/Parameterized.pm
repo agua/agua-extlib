@@ -1,15 +1,15 @@
-package MooseX::Role::Parameterized; # git description: v1.09-8-g721b0f1
-# ABSTRACT: Moose roles with composition parameters
-# KEYWORDS: moose extension parameter role arguments dynamic parameterised parameterizable parameterisable
-
-our $VERSION = '1.10';
+package MooseX::Role::Parameterized;
+# git description: v1.07-1-gaaeb0e0
+$MooseX::Role::Parameterized::VERSION = '1.08';
+# ABSTRACT: roles with composition parameters
+# KEYWORDS: moose extension parameter role arguments dynamic
 
 use 5.008001;
 use Moose 2.0300 ();
 use Moose::Exporter;
 use Carp 'confess';
 use Moose::Util 'find_meta';
-use namespace::clean 0.19;
+use namespace::clean;
 
 use MooseX::Role::Parameterized::Meta::Trait::Parameterizable;
 
@@ -91,11 +91,11 @@ __END__
 
 =head1 NAME
 
-MooseX::Role::Parameterized - Moose roles with composition parameters
+MooseX::Role::Parameterized - roles with composition parameters
 
 =head1 VERSION
 
-version 1.10
+version 1.08
 
 =head1 SYNOPSIS
 
@@ -213,24 +213,20 @@ L<http://sartak.org/talks/yapc-asia-2009/(parameterized)-roles/>
 
 L<https://github.com/SamuraiJack/JooseX-Role-Parameterized> - this extension ported to JavaScript's Joose
 
-=head1 SUPPORT
-
-Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-Role-Parameterized>
-(or L<bug-MooseX-Role-Parameterized@rt.cpan.org|mailto:bug-MooseX-Role-Parameterized@rt.cpan.org>).
-
-There is also a mailing list available for users of this distribution, at
-L<http://lists.perl.org/list/moose.html>.
-
-There is also an irc channel available for users of this distribution, at
-L<C<#moose> on C<irc.perl.org>|irc://irc.perl.org/#moose>.
-
 =head1 AUTHOR
 
 Shawn M Moore <code@sartak.org>
 
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2008 by Shawn M Moore.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
 =head1 CONTRIBUTORS
 
-=for stopwords Karen Etheridge Dave Rolsky Jesse Luehrs Oliver Charles Yuval Kogman Robert 'phaylon' Sedlacek Florian Ragwitz Mark Fowler Chris Weyl Csson Andy Jack Ricardo Signes Todd Hepler
+=for stopwords Karen Etheridge Dave Rolsky Oliver Charles Jesse Luehrs Yuval Kogman Florian Ragwitz Robert 'phaylon' Sedlacek Chris Weyl Csson Todd Hepler Ricardo Signes
 
 =over 4
 
@@ -244,11 +240,11 @@ Dave Rolsky <autarch@urth.org>
 
 =item *
 
-Jesse Luehrs <doy@tozt.net>
+Oliver Charles <oliver.g.charles@googlemail.com>
 
 =item *
 
-Oliver Charles <oliver.g.charles@googlemail.com>
+Jesse Luehrs <doy@tozt.net>
 
 =item *
 
@@ -256,15 +252,11 @@ Yuval Kogman <nothingmuch@woobling.org>
 
 =item *
 
-Robert 'phaylon' Sedlacek <rs@474.at>
-
-=item *
-
 Florian Ragwitz <rafl@debian.org>
 
 =item *
 
-Mark Fowler <mark@twoshortplanks.com>
+Robert 'phaylon' Sedlacek <rs@474.at>
 
 =item *
 
@@ -276,23 +268,12 @@ Csson <erik.carlsson@live.com>
 
 =item *
 
-Andy Jack <github@veracity.ca>
+Todd Hepler <thepler@employees.org>
 
 =item *
 
 Ricardo Signes <rjbs@cpan.org>
 
-=item *
-
-Todd Hepler <thepler@employees.org>
-
 =back
-
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2008 by Shawn M Moore.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
 
 =cut

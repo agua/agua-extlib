@@ -2,7 +2,7 @@ package Module::Build::Compat;
 
 use strict;
 use warnings;
-our $VERSION = '0.4224';
+our $VERSION = '0.4214';
 
 use File::Basename ();
 use File::Spec;
@@ -33,7 +33,7 @@ my %makefile_to_build =
            installarchlib  => "$lib/$Config{archname}",
            installsitearch => "$lib/$Config{archname}"
        );
-       return map { (config => "$_=$config{$_}") } sort keys %config;
+       return map { (config => "$_=$config{$_}") } keys %config;
    },
 
    # Convert INSTALLVENDORLIB and friends.
@@ -71,7 +71,7 @@ sub _merge_prereq {
 
   # validate formats
   for my $p ( $req, $breq ) {
-    for my $k (sort keys %$p) {
+    for my $k (keys %$p) {
       next if $k eq 'perl';
 
       my $v_obj = eval { version->new($p->{$k}) };
@@ -306,8 +306,7 @@ sub _argvify {
 sub makefile_to_build_macros {
   my @out;
   my %config; # must accumulate and return as a hashref
-  foreach my $macro (sort keys %macro_to_build) {
-    my $trans = $macro_to_build{$macro};
+  while (my ($macro, $trans) = each %macro_to_build) {
     # On some platforms (e.g. Cygwin with 'make'), the mere presence
     # of "EXPORT: FOO" in the Makefile will make $ENV{FOO} defined.
     # Therefore we check length() too.
@@ -364,11 +363,7 @@ sub fake_makefile {
   my $unlink = $class->oneliner('1 while unlink $ARGV[0]', [], [$args{makefile}]);
   $unlink =~ s/\$/\$\$/g unless $class->is_vmsish;
 
-  my $maketext = join '', map { "$_=\n" } sort keys %macro_to_build;
-
-  $maketext .= ($^O eq 'os2' ? "SHELL = sh\n\n"
-                    : $^O eq 'MSWin32' && $Config{make} =~ /gmake/
-                    ? "SHELL = $ENV{COMSPEC}\n\n" : "\n\n");
+  my $maketext = ($^O eq 'os2' ? "SHELL = sh\n\n" : '');
 
   $maketext .= <<"EOF";
 all : force_do_it
@@ -396,13 +391,13 @@ EOF
   if ($self->_is_vms_mms) {
     # Roll our own .EXPORT as MMS/MMK don't honor that directive.
     $maketext .= "\n.FIRST\n\t\@ $noop\n";
-    for my $macro (sort keys %macro_to_build) {
+    for my $macro (keys %macro_to_build) {
       $maketext .= ".IFDEF $macro\n\tDEFINE $macro \"\$($macro)\"\n.ENDIF\n";
     }
     $maketext .= "\n";
   }
   else {
-    $maketext .= "\n.EXPORT : " . join(' ', sort keys %macro_to_build) . "\n\n";
+    $maketext .= "\n.EXPORT : " . join(' ', keys %macro_to_build) . "\n\n";
   }
 
   return $maketext;

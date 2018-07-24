@@ -3,7 +3,7 @@ use warnings;
 package MooseX::Types::TypeDecorator;
 # ABSTRACT: Wraps Moose::Meta::TypeConstraint objects with added features
 
-our $VERSION = '0.50';
+our $VERSION = '0.46';
 
 use Carp::Clan '^MooseX::Types';
 use Moose::Util::TypeConstraints ();
@@ -235,7 +235,7 @@ MooseX::Types::TypeDecorator - Wraps Moose::Meta::TypeConstraint objects with ad
 
 =head1 VERSION
 
-version 0.50
+version 0.46
 
 =head1 DESCRIPTION
 
@@ -279,22 +279,11 @@ the class. The method 'new' is special cased to only be permitted on
 the class; if there is no class, or it does not provide a new method,
 an exception will be thrown.
 
-=head1 SUPPORT
-
-Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-Types>
-(or L<bug-MooseX-Types@rt.cpan.org|mailto:bug-MooseX-Types@rt.cpan.org>).
-
-There is also a mailing list available for users of this distribution, at
-L<http://lists.perl.org/list/moose.html>.
-
-There is also an irc channel available for users of this distribution, at
-L<C<#moose> on C<irc.perl.org>|irc://irc.perl.org/#moose>.
-
 =head1 AUTHOR
 
 Robert "phaylon" Sedlacek <rs@474.at>
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 This software is copyright (c) 2007 by Robert "phaylon" Sedlacek.
 

@@ -1,9 +1,11 @@
 package HTTP::Config;
-$HTTP::Config::VERSION = '6.13';
+
 use strict;
 use warnings;
 
 use URI;
+
+our $VERSION = "6.10";
 
 sub new {
     my $class = shift;
@@ -233,17 +235,11 @@ sub matching_items {
 
 1;
 
-=pod
-
-=encoding UTF-8
+__END__
 
 =head1 NAME
 
 HTTP::Config - Configuration for request and response objects
-
-=head1 VERSION
-
-version 6.13
 
 =head1 SYNOPSIS
 
@@ -432,21 +428,11 @@ Matches if the response object has that key, or the entry has the given value.
 
 L<URI>, L<HTTP::Request>, L<HTTP::Response>
 
-=head1 AUTHOR
+=head1 COPYRIGHT
 
-Gisle Aas <gisle@activestate.com>
+Copyright 2008, Gisle Aas
 
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 1994-2017 by Gisle Aas.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+This library is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
 
 =cut
-
-__END__
-
-
-#ABSTRACT: Configuration for request and response objects
-

@@ -1,23 +1,23 @@
 package DateTime::TimeZone::OlsonDB;
-
+$DateTime::TimeZone::OlsonDB::VERSION = '1.93';
 use strict;
 use warnings;
-use namespace::autoclean;
 
-our $VERSION = '2.15';
+use vars qw( %MONTHS %DAYS $PLUS_ONE_DAY_DUR $MINUS_ONE_DAY_DUR );
 
 use DateTime::TimeZone::OlsonDB::Rule;
 use DateTime::TimeZone::OlsonDB::Zone;
+use Params::Validate qw( validate SCALAR );
 
 my $x = 1;
-our %MONTHS = map { $_ => $x++ } qw( Jan Feb Mar Apr May Jun
+%MONTHS = map { $_ => $x++ } qw( Jan Feb Mar Apr May Jun
     Jul Aug Sep Oct Nov Dec);
 
 $x = 1;
-our %DAYS = map { $_ => $x++ } qw( Mon Tue Wed Thu Fri Sat Sun );
+%DAYS = map { $_ => $x++ } qw( Mon Tue Wed Thu Fri Sat Sun );
 
-our $PLUS_ONE_DAY_DUR  = DateTime::Duration->new( days => 1 );
-our $MINUS_ONE_DAY_DUR = DateTime::Duration->new( days => -1 );
+$PLUS_ONE_DAY_DUR  = DateTime::Duration->new( days => 1 );
+$MINUS_ONE_DAY_DUR = DateTime::Duration->new( days => -1 );
 
 sub new {
     my $class = shift;
@@ -40,8 +40,6 @@ sub parse_file {
         chomp;
         $self->_parse_line($_);
     }
-
-    close $fh or die $!;
 }
 
 sub _parse_line {
@@ -67,7 +65,6 @@ sub _parse_line {
     }
 }
 
-## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _parse_rule {
     my $self = shift;
     my $rule = shift;
@@ -130,7 +127,6 @@ sub _parse_link {
 
     undef $self->{in_zone};
 }
-## use critic
 
 sub links { %{ $_[0]->{links} } }
 
@@ -152,9 +148,15 @@ sub zone {
 
 sub expanded_zone {
     my $self = shift;
-    my %p    = @_;
-
-    $p{expand_to_year} ||= (localtime)[5] + 1910;
+    my %p    = validate(
+        @_, {
+            name           => { type => SCALAR },
+            expand_to_year => {
+                type    => SCALAR,
+                default => (localtime)[5] + 1910
+            },
+        }
+    );
 
     my $zone = $self->zone( $p{name} );
 
@@ -226,7 +228,16 @@ sub parse_day_spec {
 }
 
 sub utc_datetime_for_time_spec {
-    my %p = @_;
+    my %p = validate(
+        @_, {
+            spec            => { type => SCALAR },
+            year            => { type => SCALAR },
+            month           => { type => SCALAR },
+            day             => { type => SCALAR },
+            offset_from_utc => { type => SCALAR },
+            offset_from_std => { type => SCALAR },
+        },
+    );
 
     # 'w'all - ignore it, because that's the default
     $p{spec} =~ s/w$//;
@@ -237,7 +248,6 @@ sub utc_datetime_for_time_spec {
     # 's'tandard time - ignore DS offset
     my $is_std = $p{spec} =~ s/s$//;
 
-    ## no critic (NamingConventions::ProhibitAmbiguousNames)
     my ( $hour, $minute, $second ) = split /:/, $p{spec};
     $minute = 0 unless defined $minute;
     $second = 0 unless defined $second;
@@ -292,15 +302,13 @@ __END__
 
 =pod
 
-=encoding UTF-8
-
 =head1 NAME
 
 DateTime::TimeZone::OlsonDB - An object to represent an Olson time zone database
 
 =head1 VERSION
 
-version 2.15
+version 1.93
 
 =head1 SYNOPSIS
 
@@ -333,28 +341,15 @@ that rule is in effect is "CST".
 
 Not yet documented.  This stuff is a mess.
 
-=head1 SUPPORT
-
-Bugs may be submitted at L<https://github.com/houseabsolute/DateTime-TimeZone/issues>.
-
-I am also usually active on IRC as 'autarch' on C<irc://irc.perl.org>.
-
-=head1 SOURCE
-
-The source code repository for DateTime-TimeZone can be found at L<https://github.com/houseabsolute/DateTime-TimeZone>.
-
 =head1 AUTHOR
 
 Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2017 by Dave Rolsky.
+This software is copyright (c) 2015 by Dave Rolsky.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
-
-The full text of the license can be found in the
-F<LICENSE> file included with this distribution.
 
 =cut

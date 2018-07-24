@@ -4,8 +4,8 @@ use strict;
 use HTTP::Date qw(str2time parse_date time2str);
 use HTTP::Headers::Util qw(_split_header_words join_header_words);
 
-use vars qw($EPOCH_OFFSET);
-our $VERSION = '6.04';
+use vars qw($VERSION $EPOCH_OFFSET);
+$VERSION = "6.01";
 
 # Legacy: because "use "HTTP::Cookies" used be the ONLY way
 #  to load the class HTTP::Cookies::Netscape.
@@ -165,29 +165,9 @@ sub add_cookie_header
 	    unshift(@cval, $old);
 	}
 	$request->header(Cookie => join("; ", @cval));
-	if (my $hash = $request->{_http_cookies}) {
-	    %$hash = (map split(/=/, $_, 2), @cval);
-	}
     }
 
     $request;
-}
-
-
-sub get_cookies
-{
-    my $self = shift;
-    my $url = shift;
-    $url = "https://$url" unless $url =~ m,^[a-zA-Z][a-zA-Z0-9.+\-]*:,;
-    require HTTP::Request;
-    my $req = HTTP::Request->new(GET => $url);
-    my $cookies = $req->{_http_cookies} = {};
-    $self->add_cookie_header($req);
-    if (@_) {
-	return map $cookies->{$_}, @_ if wantarray;
-	return $cookies->{$_[0]};
-    }
-    return $cookies;
 }
 
 
@@ -431,9 +411,11 @@ sub save
 {
     my $self = shift;
     my $file = shift || $self->{'file'} || return;
-    open(my $fh, '>', $file) or die "Can't open $file: $!";
-    print {$fh} "#LWP-Cookies-1.0\n";
-    print {$fh} $self->as_string(!$self->{ignore_discard});
+    local(*FILE);
+    open(FILE, ">$file") or die "Can't open $file: $!";
+    print FILE "#LWP-Cookies-1.0\n";
+    print FILE $self->as_string(!$self->{ignore_discard});
+    close(FILE);
     1;
 }
 
@@ -442,47 +424,43 @@ sub load
 {
     my $self = shift;
     my $file = shift || $self->{'file'} || return;
-
+    local(*FILE, $_);
     local $/ = "\n";  # make sure we got standard record separator
-    open(my $fh, '<', $file) or return;
-
-    # check that we have the proper header
-    my $magic = <$fh>;
-    chomp $magic;
-    unless ($magic =~ /^#LWP-Cookies-\d+\.\d+/) {
-        warn "$file does not seem to contain cookies";
-        return;
+    open(FILE, $file) or return;
+    my $magic = <FILE>;
+    unless ($magic =~ /^\#LWP-Cookies-(\d+\.\d+)/) {
+	warn "$file does not seem to contain cookies";
+	return;
     }
+    while (<FILE>) {
+	next unless s/^Set-Cookie3:\s*//;
+	chomp;
+	my $cookie;
+	for $cookie (_split_header_words($_)) {
+	    my($key,$val) = splice(@$cookie, 0, 2);
+	    my %hash;
+	    while (@$cookie) {
+		my $k = shift @$cookie;
+		my $v = shift @$cookie;
+		$hash{$k} = $v;
+	    }
+	    my $version   = delete $hash{version};
+	    my $path      = delete $hash{path};
+	    my $domain    = delete $hash{domain};
+	    my $port      = delete $hash{port};
+	    my $expires   = str2time(delete $hash{expires});
 
-    # go through the file
-    while (my $line = <$fh>) {
-        chomp $line;
-        next unless $line =~ s/^Set-Cookie3:\s*//;
-        my $cookie;
-        for $cookie (_split_header_words($line)) {
-            my($key,$val) = splice(@$cookie, 0, 2);
-            my %hash;
-            while (@$cookie) {
-                my $k = shift @$cookie;
-                my $v = shift @$cookie;
-                $hash{$k} = $v;
-            }
-            my $version   = delete $hash{version};
-            my $path      = delete $hash{path};
-            my $domain    = delete $hash{domain};
-            my $port      = delete $hash{port};
-            my $expires   = str2time(delete $hash{expires});
+	    my $path_spec = exists $hash{path_spec}; delete $hash{path_spec};
+	    my $secure    = exists $hash{secure};    delete $hash{secure};
+	    my $discard   = exists $hash{discard};   delete $hash{discard};
 
-            my $path_spec = exists $hash{path_spec}; delete $hash{path_spec};
-            my $secure    = exists $hash{secure};    delete $hash{secure};
-            my $discard   = exists $hash{discard};   delete $hash{discard};
-
-            my @array = ($version, $val, $port, $path_spec, $secure, $expires,
-                $discard);
-            push(@array, \%hash) if %hash;
-            $self->{COOKIES}{$domain}{$path}{$key} = \@array;
-        }
+	    my @array =	($version,$val,$port,
+			 $path_spec,$secure,$expires,$discard);
+	    push(@array, \%hash) if %hash;
+	    $self->{COOKIES}{$domain}{$path}{$key} = \@array;
+	}
     }
+    close(FILE);
     1;
 }
 
@@ -622,17 +600,11 @@ sub _normalize_path  # so that plain string compare can be used
 
 1;
 
-=pod
-
-=encoding UTF-8
+__END__
 
 =head1 NAME
 
 HTTP::Cookies - HTTP cookie jars
-
-=head1 VERSION
-
-version 6.04
 
 =head1 SYNOPSIS
 
@@ -663,7 +635,7 @@ to both store and retrieve information on the client side of the
 connection.  For more information about cookies refer to
 <URL:http://curl.haxx.se/rfc/cookie_spec.html> and
 <URL:http://www.cookiecentral.com/>.  This module also implements the
-new style cookies described in L<RFC 2965|https://tools.ietf.org/html/rfc2965>.
+new style cookies described in I<RFC 2965>.
 The two variants of cookies are supposed to be able to coexist happily.
 
 Instances of the class I<HTTP::Cookies> are able to store a collection
@@ -671,22 +643,6 @@ of Set-Cookie2: and Set-Cookie: headers and are able to use this
 information to initialize Cookie-headers in I<HTTP::Request> objects.
 The state of a I<HTTP::Cookies> object can be saved in and restored from
 files.
-
-=head1 LIMITATIONS
-
-This module does not support L<< Public Suffix|https://publicsuffix.org/
->> encouraged by a more recent standard, L<< RFC
-6265|https://tools.ietf.org/html/rfc6265 >>.
-
-This module's shortcomings mean that a malicious Web site can set
-cookies to track your user agent across all sites under a top level
-domain.  See F<< t/publicsuffix.t >> in this module's distribution for
-details.
-
-L<< HTTP::CookieJar::LWP >> supports Public Suffix, but only provides a
-limited subset of this module's functionality and L<< does not
-support|HTTP::CookieJar/LIMITATIONS-AND-CAVEATS >> standards older than
-I<RFC 6265>.
 
 =head1 METHODS
 
@@ -712,16 +668,6 @@ Future parameters might include (not yet implemented):
 
   no_cookies   list of domain names that we never return cookies to
 
-=item $cookie_jar->get_cookies( $url_or_domain )
-
-=item $cookie_jar->get_cookies( $url_or_domain, $cookie_key,... )
-
-Returns a hash of the cookies that applies to the given URL. If a
-domainname is given as argument, then a prefix of "https://" is assumed.
-
-If one or more $cookie_key parameters are provided return the given values,
-or C<undef> if the cookie isn't available.
-
 =item $cookie_jar->add_cookie_header( $request )
 
 The add_cookie_header() method will set the appropriate Cookie:-header
@@ -741,7 +687,7 @@ The set_cookie() method updates the state of the $cookie_jar.  The
 $key, $val, $domain, $port and $path arguments are strings.  The
 $path_spec, $secure, $discard arguments are boolean values. The $maxage
 value is a number indicating number of seconds that this cookie will
-live.  A value of $maxage <= 0 will delete this cookie.  %rest defines
+live.  A value <= 0 will delete this cookie.  %rest defines
 various other attributes like "Comment" and "CommentURL".
 
 =item $cookie_jar->save
@@ -826,19 +772,10 @@ cookies with the I<Discard> attribute.
 
 L<HTTP::Cookies::Netscape>, L<HTTP::Cookies::Microsoft>
 
-=head1 AUTHOR
+=head1 COPYRIGHT
 
-Gisle Aas <gisle@activestate.com>
+Copyright 1997-2002 Gisle Aas
 
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2002-2017 by Gisle Aas.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-=cut
-
-__END__
-#ABSTRACT: HTTP cookie jars
+This library is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
 

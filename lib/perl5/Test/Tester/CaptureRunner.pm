@@ -3,9 +3,6 @@ use strict;
 
 package Test::Tester::CaptureRunner;
 
-our $VERSION = '1.302120';
-
-
 use Test::Tester::Capture;
 require Exporter;
 

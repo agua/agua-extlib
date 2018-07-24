@@ -27,11 +27,11 @@ TAP::Parser - Parse L<TAP|Test::Harness::TAP> output
 
 =head1 VERSION
 
-Version 3.39
+Version 3.35
 
 =cut
 
-our $VERSION = '3.39';
+our $VERSION = '3.35';
 
 my $DEFAULT_TAP_VERSION = 12;
 my $MAX_TAP_VERSION     = 13;
@@ -97,7 +97,7 @@ L<http://testanything.org>
 
 It includes the TAP::Parser Cookbook:
 
-L<http://testanything.org/testing-with-tap/perl/tap::parser-cookbook.html>
+L<http://testanything.org/wiki/index.php/TAP::Parser_Cookbook>
 
 =head1 METHODS
 

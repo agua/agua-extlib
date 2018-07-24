@@ -2,15 +2,13 @@ package DateTime::Locale::Base;
 
 use strict;
 use warnings;
-use namespace::autoclean;
 
-our $VERSION = '1.17';
+our $VERSION = '0.46';
 
 use Carp qw( carp );
 use DateTime::Locale;
-use List::Util 1.45 ();
-use Params::ValidationCompiler 0.13 qw( validation_for );
-use Specio::Declare;
+use List::MoreUtils ();
+use Params::Validate qw( validate_pos );
 
 BEGIN {
     foreach my $field (
@@ -38,8 +36,8 @@ sub new {
     # key, it allows them to be settable.
     return bless {
         @_,
-        default_date_format_length => 'long',
-        default_time_format_length => 'long',
+        default_date_format_length => $class->_default_date_format_length(),
+        default_time_format_length => $class->_default_time_format_length(),
     }, $class;
 }
 
@@ -60,7 +58,7 @@ sub date_formats {
         map {
             my $meth = 'date_format_' . $_;
             $_ => $_[0]->$meth()
-        } @FormatLengths
+            } @FormatLengths
     };
 }
 
@@ -74,7 +72,7 @@ sub time_formats {
         map {
             my $meth = 'time_format_' . $_;
             $_ => $_[0]->$meth()
-        } @FormatLengths
+            } @FormatLengths
     };
 }
 
@@ -95,7 +93,8 @@ sub available_formats {
     # The various parens seem to be necessary to force uniq() to see
     # the caller's list context. Go figure.
     my @uniq
-        = List::Util::uniq( map { keys %{ $_->_available_formats() || {} } }
+        = List::MoreUtils::uniq(
+        map { keys %{ $_->_available_formats() || {} } }
             _self_and_super_path( ref $self ) );
 
     # Doing the sort in the same expression doesn't work under 5.6.x.
@@ -105,37 +104,37 @@ sub available_formats {
 # Copied wholesale from Class::ISA, because said module warns as deprecated
 # with perl 5.11.0+, which is kind of annoying.
 sub _self_and_super_path {
+  # Assumption: searching is depth-first.
+  # Assumption: '' (empty string) can't be a class package name.
+  # Note: 'UNIVERSAL' is not given any special treatment.
+  return () unless @_;
 
-    # Assumption: searching is depth-first.
-    # Assumption: '' (empty string) can't be a class package name.
-    # Note: 'UNIVERSAL' is not given any special treatment.
-    return () unless @_;
+  my @out = ();
 
-    my @out = ();
+  my @in_stack = ($_[0]);
+  my %seen = ($_[0] => 1);
 
-    my @in_stack = ( $_[0] );
-    my %seen = ( $_[0] => 1 );
+  my $current;
+  while(@in_stack) {
+    next unless defined($current = shift @in_stack) && length($current);
+    push @out, $current;
+    no strict 'refs';
+    unshift @in_stack,
+      map
+        { my $c = $_; # copy, to avoid being destructive
+          substr($c,0,2) = "main::" if substr($c,0,2) eq '::';
+           # Canonize the :: -> main::, ::foo -> main::foo thing.
+           # Should I ever canonize the Foo'Bar = Foo::Bar thing?
+          $seen{$c}++ ? () : $c;
+        }
+        @{"$current\::ISA"}
+    ;
+    # I.e., if this class has any parents (at least, ones I've never seen
+    # before), push them, in order, onto the stack of classes I need to
+    # explore.
+  }
 
-    my $current;
-    while (@in_stack) {
-        next unless defined( $current = shift @in_stack ) && length($current);
-        push @out, $current;
-        no strict 'refs';
-        unshift @in_stack, map {
-            my $c = $_;    # copy, to avoid being destructive
-            substr( $c, 0, 2 ) = "main::" if substr( $c, 0, 2 ) eq '::';
-
-            # Canonize the :: -> main::, ::foo -> main::foo thing.
-            # Should I ever canonize the Foo'Bar = Foo::Bar thing?
-            $seen{$c}++ ? () : $c;
-        } @{"$current\::ISA"};
-
-        # I.e., if this class has any parents (at least, ones I've never seen
-        # before), push them, in order, onto the stack of classes I need to
-        # explore.
-    }
-
-    return @out;
+  return @out;
 }
 
 # Just needed for the above method.
@@ -143,16 +142,10 @@ sub _available_formats { }
 
 sub default_date_format_length { $_[0]->{default_date_format_length} }
 
-my $length = enum( values => [qw( full long medium short )] );
-my $validator = validation_for(
-    name             => '_check_length_parameter',
-    name_is_optional => 1,
-    params           => [ { type => $length } ],
-);
-
 sub set_default_date_format_length {
     my $self = shift;
-    my ($l) = $validator->(@_);
+    my ($l)
+        = validate_pos( @_, { regex => qr/^(?:full|long|medium|short)$/i } );
 
     $self->{default_date_format_length} = lc $l;
 }
@@ -161,7 +154,8 @@ sub default_time_format_length { $_[0]->{default_time_format_length} }
 
 sub set_default_time_format_length {
     my $self = shift;
-    my ($l) = $validator->(@_);
+    my ($l)
+        = validate_pos( @_, { regex => qr/^(?:full|long|medium|short)/i } );
 
     $self->{default_time_format_length} = lc $l;
 }
@@ -466,8 +460,8 @@ sub STORABLE_freeze {
 }
 
 sub STORABLE_thaw {
-    my $self = shift;
-    shift;
+    my $self       = shift;
+    my $cloning    = shift;
     my $serialized = shift;
 
     my $obj = DateTime::Locale->load($serialized);
@@ -485,25 +479,17 @@ __END__
 
 =pod
 
-=encoding UTF-8
-
 =head1 NAME
 
 DateTime::Locale::Base - Base class for individual locale objects
 
 =head1 VERSION
 
-version 1.17
+version 0.46
 
 =head1 SYNOPSIS
 
   use base 'DateTime::Locale::Base';
-
-=head1 DESCRIPTION
-
-B<This module is no longer used by the code in the distribution.> It is still
-included for the sake of any code out in the wild that may subclass this
-class. This class will be removed in a future release.
 
 =head1 DEFAULT FORMATS
 
@@ -805,29 +791,25 @@ one exists.
 
 See L<DateTime::Locale>.
 
-Bugs may be submitted at L<https://github.com/houseabsolute/DateTime-Locale/issues>.
+=head1 AUTHORS
 
-There is a mailing list available for users of this distribution,
-L<mailto:datetime@perl.org>.
+=over 4
 
-I am also usually active on IRC as 'autarch' on C<irc://irc.perl.org>.
+=item *
 
-=head1 SOURCE
+Richard Evans
 
-The source code repository for DateTime-Locale can be found at L<https://github.com/houseabsolute/DateTime-Locale>.
-
-=head1 AUTHOR
+=item *
 
 Dave Rolsky <autarch@urth.org>
 
+=back
+
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2003 - 2017 by Dave Rolsky.
+This software is copyright (c) 2015 by Dave Rolsky.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
-
-The full text of the license can be found in the
-F<LICENSE> file included with this distribution.
 
 =cut

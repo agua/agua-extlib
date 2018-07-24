@@ -4,7 +4,7 @@ package B::Hooks::EndOfScope::XS;
 use strict;
 use warnings;
 
-our $VERSION = '0.21';
+our $VERSION = '0.15';
 
 use Variable::Magic 0.48 ();
 use Sub::Exporter::Progressive 0.001006 -setup => {
@@ -37,6 +37,26 @@ sub on_scope_end (&) {
   }
 }
 
+
+#pod =head1 DESCRIPTION
+#pod
+#pod This is the implementation of L<B::Hooks::EndOfScope> based on
+#pod L<Variable::Magic>, which is an XS module dependent on a compiler. It will
+#pod always be automatically preferred if L<Variable::Magic> is available.
+#pod
+#pod =func on_scope_end
+#pod
+#pod     on_scope_end { ... };
+#pod
+#pod     on_scope_end $code;
+#pod
+#pod Registers C<$code> to be executed after the surrounding scope has been
+#pod compiled.
+#pod
+#pod This is exported by default. See L<Sub::Exporter> on how to customize it.
+#pod
+#pod =cut
+
 1;
 
 __END__
@@ -51,7 +71,7 @@ B::Hooks::EndOfScope::XS - Execute code after a scope finished compilation - XS 
 
 =head1 VERSION
 
-version 0.21
+version 0.15
 
 =head1 DESCRIPTION
 
@@ -72,11 +92,6 @@ compiled.
 
 This is exported by default. See L<Sub::Exporter> on how to customize it.
 
-=head1 SUPPORT
-
-Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=B-Hooks-EndOfScope>
-(or L<bug-B-Hooks-EndOfScope@rt.cpan.org|mailto:bug-B-Hooks-EndOfScope@rt.cpan.org>).
-
 =head1 AUTHORS
 
 =over 4
@@ -91,7 +106,7 @@ Peter Rabbitson <ribasushi@cpan.org>
 
 =back
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 This software is copyright (c) 2008 by Florian Ragwitz.
 

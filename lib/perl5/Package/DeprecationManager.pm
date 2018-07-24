@@ -3,14 +3,12 @@ package Package::DeprecationManager;
 use strict;
 use warnings;
 
-our $VERSION = '0.17';
+our $VERSION = '0.14';
 
 use Carp qw( croak );
 use List::Util 1.33 qw( any );
-use Package::Stash;
 use Params::Util qw( _HASH0 );
 use Sub::Install;
-use Sub::Name qw( subname );
 
 sub import {
     shift;
@@ -22,22 +20,15 @@ sub import {
 
     my %registry;
 
-    my $caller = caller();
-
-    my $orig_import = $caller->can('import');
-
-    my $import = _build_import( \%registry, $orig_import );
+    my $import = _build_import( \%registry );
     my $warn
         = _build_warn( \%registry, $args{-deprecations}, $args{-ignore} );
 
-    # We need to remove this to prevent a 'subroutine redefined' warning.
-    if ($orig_import) {
-        Package::Stash->new($caller)->remove_symbol('&import');
-    }
+    my $caller = caller();
 
     Sub::Install::install_sub(
         {
-            code => subname( $caller . '::import', $import ),
+            code => $import,
             into => $caller,
             as   => 'import',
         }
@@ -45,7 +36,7 @@ sub import {
 
     Sub::Install::install_sub(
         {
-            code => subname( $caller . '::deprecated', $warn ),
+            code => $warn,
             into => $caller,
             as   => 'deprecated',
         }
@@ -55,34 +46,16 @@ sub import {
 }
 
 sub _build_import {
-    my $registry    = shift;
-    my $orig_import = shift;
+    my $registry = shift;
 
     return sub {
         my $class = shift;
+        my %args  = @_;
 
-        my @args;
+        $args{-api_version} ||= delete $args{-compatible};
 
-        my $api_version;
-        ## no critic (ControlStructures::ProhibitCStyleForLoops)
-        for ( my $i = 0; $i < @_; $i++ ) {
-            if ( $_[$i] eq '-api_version' || $_[$i] eq '-compatible' ) {
-                $api_version = $_[ ++$i ];
-            }
-            else {
-                push @args, $_[$i];
-            }
-        }
-        ## use critic
-
-        my $caller = caller();
-        $registry->{$caller} = $api_version
-            if defined $api_version;
-
-        if ($orig_import) {
-            @_ = ( $class, @args );
-            goto &{$orig_import};
-        }
+        $registry->{ caller() } = $args{-api_version}
+            if $args{-api_version};
 
         return;
     };
@@ -158,15 +131,13 @@ __END__
 
 =pod
 
-=encoding UTF-8
-
 =head1 NAME
 
 Package::DeprecationManager - Manage deprecation warnings for your distribution
 
 =head1 VERSION
 
-version 0.17
+version 0.14
 
 =head1 SYNOPSIS
 
@@ -256,23 +227,12 @@ module tracks this based on both the feature name I<and> the error message
 itself. This means that if you provide several different error messages for
 the same feature, all of those errors will appear.
 
-=head2 Other import() subs
+=head1 BUGS
 
-This module works by installing an C<import> sub in any package that uses
-it. If that package I<already> has an C<import> sub, then that C<import> will
-be called after any arguments passed for C<Package::DeprecationManager> are
-stripped out. You need to define your C<import> sub before you C<use
-Package::DeprecationManager> to make this work:
-
-  package HasExporter;
-
-  use Exporter qw( import );
-
-  use Package::DeprecationManager -deprecations => {
-      'HasExporter::foo' => '0.02',
-  };
-
-  our @EXPORT_OK = qw( some_sub another_sub );
+Please report any bugs or feature requests to
+C<bug-package-deprecationmanager@rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org>.  I will be notified, and then you'll automatically be
+notified of progress on your bug as I make changes.
 
 =head1 DONATIONS
 
@@ -296,35 +256,6 @@ button on this page: L<http://www.urth.org/~autarch/fs-donation.html>
 
 The idea for this functionality and some of its implementation was originally
 created as L<Class::MOP::Deprecated> by Goro Fuji.
-
-=head1 BUGS
-
-Please report any bugs or feature requests to
-C<bug-package-deprecationmanager@rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org>.  I will be notified, and then you'll automatically be
-notified of progress on your bug as I make changes.
-
-Bugs may be submitted through L<the RT bug tracker|http://rt.cpan.org/Public/Dist/Display.html?Name=Package-DeprecationManager>
-(or L<bug-package-deprecationmanager@rt.cpan.org|mailto:bug-package-deprecationmanager@rt.cpan.org>).
-
-I am also usually active on IRC as 'drolsky' on C<irc://irc.perl.org>.
-
-=head1 DONATIONS
-
-If you'd like to thank me for the work I've done on this module, please
-consider making a "donation" to me via PayPal. I spend a lot of free time
-creating free software, and would appreciate any support you'd care to offer.
-
-Please note that B<I am not suggesting that you must do this> in order for me
-to continue working on this particular software. I will continue to do so,
-inasmuch as I have in the past, for as long as it interests me.
-
-Similarly, a donation made in this way will probably not make me work on this
-software much more, unless I get so many donations that I can consider working
-on free software full time (let's all have a chuckle at that together).
-
-To donate, log into PayPal and send money to autarch@urth.org, or use the
-button at L<http://www.urth.org/~autarch/fs-donation.html>.
 
 =head1 AUTHOR
 
@@ -350,9 +281,9 @@ Tomas Doran <bobtfish@bobtfish.net>
 
 =back
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
-This software is Copyright (c) 2016 by Dave Rolsky.
+This software is Copyright (c) 2015 by Dave Rolsky.
 
 This is free software, licensed under:
 

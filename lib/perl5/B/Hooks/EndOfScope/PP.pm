@@ -4,7 +4,7 @@ package B::Hooks::EndOfScope::PP;
 use warnings;
 use strict;
 
-our $VERSION = '0.21';
+our $VERSION = '0.15';
 
 use constant _PERL_VERSION => "$]";
 
@@ -44,6 +44,27 @@ sub __invoke_callback {
   };
 }
 
+#pod =head1 DESCRIPTION
+#pod
+#pod This is the pure-perl implementation of L<B::Hooks::EndOfScope> based only on
+#pod modules available as part of the perl core. Its leaner sibling
+#pod L<B::Hooks::EndOfScope::XS> will be automatically preferred if all
+#pod dependencies are available and C<$ENV{B_HOOKS_ENDOFSCOPE_IMPLEMENTATION}> is
+#pod not set to C<'PP'>.
+#pod
+#pod =func on_scope_end
+#pod
+#pod     on_scope_end { ... };
+#pod
+#pod     on_scope_end $code;
+#pod
+#pod Registers C<$code> to be executed after the surrounding scope has been
+#pod compiled.
+#pod
+#pod This is exported by default. See L<Sub::Exporter> on how to customize it.
+#pod
+#pod =cut
+
 1;
 
 __END__
@@ -58,7 +79,7 @@ B::Hooks::EndOfScope::PP - Execute code after a scope finished compilation - PP 
 
 =head1 VERSION
 
-version 0.21
+version 0.15
 
 =head1 DESCRIPTION
 
@@ -81,11 +102,6 @@ compiled.
 
 This is exported by default. See L<Sub::Exporter> on how to customize it.
 
-=head1 SUPPORT
-
-Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=B-Hooks-EndOfScope>
-(or L<bug-B-Hooks-EndOfScope@rt.cpan.org|mailto:bug-B-Hooks-EndOfScope@rt.cpan.org>).
-
 =head1 AUTHORS
 
 =over 4
@@ -100,7 +116,7 @@ Peter Rabbitson <ribasushi@cpan.org>
 
 =back
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 This software is copyright (c) 2008 by Florian Ragwitz.
 

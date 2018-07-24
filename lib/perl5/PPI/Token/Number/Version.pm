@@ -35,7 +35,7 @@ use PPI::Token::Number ();
 
 use vars qw{$VERSION @ISA};
 BEGIN {
-	$VERSION = '1.236';
+	$VERSION = '1.220';
 	@ISA     = 'PPI::Token::Number';
 }
 
@@ -102,23 +102,17 @@ sub __TOKENIZER__on_char {
 sub __TOKENIZER__commit {
 	my $t = $_[1];
 
-	# Capture the rest of the token
+	# Get the rest of the line
 	pos $t->{line} = $t->{line_cursor};
-	if ( $t->{line} !~ m/\G(v\d+(?:\.\d+)+|v\d+\b)/gc ) {
+	if ( $t->{line} !~ m/\G(v\d+(?:\.\d+)*)/gc ) {
 		# This was not a v-string after all (it's a word)
 		return PPI::Token::Word->__TOKENIZER__commit($t);
 	}
 
-	my $content = $1;
-
-	# If there are no periods this could be a word starting with v\d
-	# Forced to be a word. Done.
-	return PPI::Token::Word->__TOKENIZER__commit($t)
-		if $content !~ /\./ and $t->__current_token_is_forced_word($content);
-
 	# This is a v-string
-	$t->{line_cursor} += length $content;
-	$t->_new_token( 'Number::Version', $content );
+	my $vstring = $1;
+	$t->{line_cursor} += length($vstring);
+	$t->_new_token('Number::Version', $vstring);
 	$t->_finalize_token->__TOKENIZER__on_char($t);
 }
 

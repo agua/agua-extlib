@@ -1,8 +1,6 @@
 package ## Hide from PAUSE
   MooseX::Types::Structured::OverflowHandler;
 
-our $VERSION = '0.36';
-
 use Moose;
 
 use overload '""' => 'name', fallback => 1;
@@ -16,7 +14,7 @@ has type_constraint => (
 
 sub name {
     my ($self) = @_;
-    return 'slurpy(' . $self->type_constraint->name . ')';
+    return 'slurpy ' . $self->type_constraint->name;
 }
 
 no Moose;

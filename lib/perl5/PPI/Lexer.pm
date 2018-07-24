@@ -62,7 +62,7 @@ use PPI::Exception  ();
 
 use vars qw{$VERSION $errstr *_PARENT %ROUND %RESOLVE};
 BEGIN {
-	$VERSION = '1.236';
+	$VERSION = '1.220';
 	$errstr  = '';
 
 	# Faster than having another method call just
@@ -292,7 +292,7 @@ sub _lex_document {
 		# Is this the close of a structure.
 		if ( $Token->__LEXER__closes ) {
 			# Because we are at the top of the tree, this is an error.
-			# This means either a mis-parsing, or a mistake in the code.
+			# This means either a mis-parsing, or an mistake in the code.
 			# To handle this, we create a "Naked Close" statement
 			$self->_add_element( $Document,
 				PPI::Statement::UnmatchedBrace->new($Token)
@@ -440,28 +440,6 @@ sub _statement {
 
 	# Is it a token in our known classes list
 	my $class = $STATEMENT_CLASSES{$Token->content};
-	if ( $class ) {
-		# Is the next significant token a =>
-		# Read ahead to the next significant token
-		my $Next;
-		while ( $Next = $self->_get_token ) {
-			if ( !$Next->significant ) {
-				push @{$self->{delayed}}, $Next;
-				next;
-			}
-
-			last if
-				!$Next->isa( 'PPI::Token::Operator' ) or $Next->content ne '=>';
-
-			# Got the next token
-			# Is an ordinary expression
-			$self->_rollback( $Next );
-			return 'PPI::Statement';
-		}
-
-		# Rollback and continue
-		$self->_rollback( $Next );
-	}
 
 	# Handle potential barewords for subscripts
 	if ( $Parent->isa('PPI::Structure::Subscript') ) {
@@ -555,16 +533,8 @@ sub _statement {
 			}
 
 			# Found the next significant token.
-			if (
-				$Next->isa('PPI::Token::Operator')
-				and
-				$Next->content eq '=>'
-			) {
-				# Is an ordinary expression
-				$self->_rollback( $Next );
-				return 'PPI::Statement';
 			# Is it a v6 use?
-			} elsif ( $Next->content eq 'v6' ) {
+			if ( $Next->content eq 'v6' ) {
 				$self->_rollback( $Next );
 				return 'PPI::Statement::Include::Perl6';
 			} else {
@@ -726,23 +696,22 @@ sub _continues {
 		return '';
 	}
 
-	# Alrighty then, there are six implied-end statement types:
-	# ::Scheduled blocks, ::Sub declarations, ::Compound, ::Given, ::When,
-	# and ::Package statements.
-	return 1
-		if ref $Statement !~ /\b(?:Scheduled|Sub|Compound|Given|When|Package)$/;
+	# Alrighty then, there are only five implied end statement types,
+	# ::Scheduled blocks, ::Sub declarations, ::Compound, ::Given, and ::When
+	# statements.
+	unless ( ref($Statement) =~ /\b(?:Scheduled|Sub|Compound|Given|When)$/ ) {
+		return 1;
+	}
 
-	# Of these six, ::Scheduled, ::Sub, ::Given, and ::When follow the same
-	# simple rule and can be handled first.  The block form of ::Package
-	# follows the rule, too.  (The non-block form of ::Package
-	# requires a statement terminator, and thus doesn't need to have
-	# an implied end detected.)
+	# Of these five, ::Scheduled, ::Sub, ::Given, and ::When follow the same
+	# simple rule and can be handled first.
 	my @part      = $Statement->schildren;
 	my $LastChild = $part[-1];
-	# If the last significant element of the statement is a block,
-	# then an implied-end statement is done, no questions asked.
-	return !$LastChild->isa('PPI::Structure::Block')
-		if !$Statement->isa('PPI::Statement::Compound');
+	unless ( $Statement->isa('PPI::Statement::Compound') ) {
+		# If the last significant element of the statement is a block,
+		# then a scheduled statement is done, no questions asked.
+		return ! $LastChild->isa('PPI::Structure::Block');
+	}
 
 	# Now we get to compound statements, which kind of suck (to lex).
 	# However, of them all, the 'if' type, which includes unless, are
@@ -1149,16 +1118,6 @@ sub _curly {
 					and return 'PPI::Structure::Subscript';
 			}
 		}
-
-		# Are we the last argument of sub?
-		# E.g.: 'sub foo {}', 'sub foo ($) {}'
-		return 'PPI::Structure::Block' if $Parent->isa('PPI::Statement::Sub');
-
-		# Are we the second or third argument of package?
-		# E.g.: 'package Foo {}' or 'package Foo v1.2.3 {}'
-		return 'PPI::Structure::Block'
-			if $Parent->isa('PPI::Statement::Package');
-
 		if ( $CURLY_CLASSES{$content} ) {
 			# Known type
 			return $CURLY_CLASSES{$content};
@@ -1350,7 +1309,7 @@ sub _get_token {
 #     $self->{Tokenizer}->get_token;
 # }
 
-# Delay the addition of insignificant elements.
+# Delay the addition of a insignificant elements.
 # This ended up being inlined.
 # sub _delay_element {
 #     my $self    = shift;

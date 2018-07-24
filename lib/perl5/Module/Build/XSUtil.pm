@@ -8,7 +8,7 @@ use File::Basename;
 use File::Path;
 our @ISA = qw(Module::Build);
 
-our $VERSION = "0.18";
+our $VERSION = "0.16";
 
 __PACKAGE__->add_property( 'ppport_h_path'   => undef );
 __PACKAGE__->add_property( 'xshelper_h_path' => undef );
@@ -19,7 +19,6 @@ sub new {
     my %args     = @_;
 
     my $self = $class->SUPER::new(%args);
-    return $self if $self->pureperl_only && $self->allow_pureperl;
 
     if ( !defined $args{cc_warnings} ) {
         $args{cc_warnings} = 1;
@@ -413,7 +412,7 @@ Use in your Build.PL
 
 Use in custom builder module.
 
-    package builder::MyBuilder;
+    pakcage builder::MyBuilder;
     use strict;
     use warnings;
     use base 'Module::Build::XSUtil';

@@ -3,15 +3,13 @@ package URI::urn;  # RFC 2141
 use strict;
 use warnings;
 
-our $VERSION = '1.72';
-$VERSION = eval $VERSION;
+our $VERSION = "1.69";
 
 use parent 'URI';
 
 use Carp qw(carp);
 
 my %implementor;
-my %require_attempted;
 
 sub _init {
     my $class = shift;
@@ -31,13 +29,9 @@ sub _init {
 	$impclass = "URI::urn::$id";
 	no strict 'refs';
 	unless (@{"${impclass}::ISA"}) {
-            if (not exists $require_attempted{$impclass}) {
-                # Try to load it
-                my $_old_error = $@;
-                eval "require $impclass";
-                die $@ if $@ && $@ !~ /Can\'t locate.*in \@INC/;
-                $@ = $_old_error;
-            }
+	    # Try to load it
+	    eval "require $impclass";
+	    die $@ if $@ && $@ !~ /Can\'t locate.*in \@INC/;
 	    $impclass = "URI::urn" unless @{"${impclass}::ISA"};
 	}
     }

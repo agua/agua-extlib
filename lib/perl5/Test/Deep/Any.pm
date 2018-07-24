@@ -3,61 +3,63 @@ use warnings;
 
 package Test::Deep::Any;
 
-use Scalar::Util ();
 use Test::Deep::Cmp;
+
+use overload
+	'&' => \&add,
+	fallback => 1,
+;
 
 sub init
 {
-  my $self = shift;
+	my $self = shift;
 
-  my @list = map {
-    (Scalar::Util::blessed($_) && $_->isa('Test::Deep::Any'))
-    ? @{ $_->{val} }
-    : $_
-  } @_;
+	my @list = map {Test::Deep::wrap($_)} @_;
 
-  $self->{val} = \@list;
+	$self->{val} = \@list;
 }
 
 sub descend
 {
-  my $self = shift;
-  my $got = shift;
+	my $self = shift;
+	my $got = shift;
 
-  foreach my $cmp (@{$self->{val}})
-  {
-    return 1 if Test::Deep::eq_deeply_cache($got, $cmp);
-  }
+	foreach my $cmp (@{$self->{val}})
+	{
+		return 1 if Test::Deep::eq_deeply_cache($got, $cmp);
+	}
 
-  return 0;
-}
-
-sub renderExp
-{
-  my $self = shift;
-
-  my @expect = map {; Test::Deep::wrap($_) } @{ $self->{val} };
-  my $things = join(", ", map {$_->renderExp} @expect);
-
-  return "Any of ( $things )";
+	return 0;
 }
 
 sub diagnostics
 {
-  my $self = shift;
-  my ($where, $last) = @_;
+	my $self = shift;
+	my ($where, $last) = @_;
 
-  my $got = $self->renderGot($last->{got});
-  my $exp = $self->renderExp;
+	my $expect = $self->{val};
 
-  my $diag = <<EOM;
+	my $got = $self->renderGot($last->{got});
+	my $things = join(", ", map {$_->renderExp} @$expect);
+
+	my $diag = <<EOM;
 Comparing $where with Any
 got      : $got
-expected : $exp
+expected : Any of ( $things )
 EOM
 
-  $diag =~ s/\n+$/\n/;
-  return $diag;
+	$diag =~ s/\n+$/\n/;
+	return $diag;
 }
 
-4;
+sub add
+{
+	my $self = shift;
+	my $expect = shift;
+
+	push(@{$self->{val}}, Test::Deep::wrap($expect));
+
+	return $self;
+}
+
+1;

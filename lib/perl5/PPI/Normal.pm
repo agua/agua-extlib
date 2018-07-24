@@ -36,13 +36,13 @@ process to be.
 
 use strict;
 use Carp                      ();
-use List::Util 1.33           ();
+use List::MoreUtils           ();
 use PPI::Util                 '_Document';
 use PPI::Document::Normalized ();
 
 use vars qw{$VERSION %LAYER};
 BEGIN {
-	$VERSION = '1.236';
+	$VERSION = '1.220';
 
 	# Registered function store
 	%LAYER = (
@@ -86,7 +86,7 @@ sub register {
 		}
 
 		# Has it already been added?
-		if ( List::Util::any { $_ eq $function } map @{$_}, values %LAYER ) {
+		if ( List::MoreUtils::any { $_ eq $function } ) {
 			return 1;
 		}
 
