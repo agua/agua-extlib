@@ -1,7 +1,2 @@
-/mnt/repos/private/syoung/aguadev/lib/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/PerlIO/eol.pm
-/mnt/repos/private/syoung/aguadev/lib/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/auto/PerlIO/eol/eol.bs
-/mnt/repos/private/syoung/aguadev/lib/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/auto/PerlIO/eol/eol.so
-/usr/local/lib/perl/5.18.2/PerlIO/eol.pm
-/usr/local/lib/perl/5.18.2/auto/PerlIO/eol/eol.bs
-/usr/local/lib/perl/5.18.2/auto/PerlIO/eol/eol.so
-/usr/local/man/man3/PerlIO::eol.3pm
+/mnt/repos/agua/flow/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/PerlIO/eol.pm
+/mnt/repos/agua/flow/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/auto/PerlIO/eol/eol.so

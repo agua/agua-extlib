@@ -2,13 +2,16 @@ package DateTime::Duration;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
-our $VERSION = '1.20';
+our $VERSION = '1.49';
 
 use Carp ();
 use DateTime;
 use DateTime::Helpers;
-use Params::Validate qw( validate SCALAR );
+use DateTime::Types;
+use Params::ValidationCompiler 0.26 qw( validation_for );
+use Scalar::Util qw( blessed );
 
 use overload (
     fallback => 1,
@@ -19,58 +22,75 @@ use overload (
     'cmp'    => '_compare_overload',
 );
 
-use constant MAX_NANOSECONDS => 1_000_000_000;    # 1E9 = almost 32 bits
+sub MAX_NANOSECONDS () {1_000_000_000}    # 1E9 = almost 32 bits
 
 my @all_units = qw( months days minutes seconds nanoseconds );
 
-# XXX - need to reject non-integers but accept infinity, NaN, &
-# 1.56e+18
-sub new {
-    my $class = shift;
-    my %p     = validate(
-        @_, {
-            years        => { type => SCALAR, default => 0 },
-            months       => { type => SCALAR, default => 0 },
-            weeks        => { type => SCALAR, default => 0 },
-            days         => { type => SCALAR, default => 0 },
-            hours        => { type => SCALAR, default => 0 },
-            minutes      => { type => SCALAR, default => 0 },
-            seconds      => { type => SCALAR, default => 0 },
-            nanoseconds  => { type => SCALAR, default => 0 },
+{
+    my %units = map {
+        $_ => {
+
+            # XXX - what we really want is to accept an integer, Inf, -Inf,
+            # and NaN, but I can't figure out how to accept NaN since it never
+            # compares to anything.
+            type    => t('Defined'),
+            default => 0,
+            }
+        } qw(
+        years
+        months
+        weeks
+        days
+        hours
+        minutes
+        seconds
+        nanoseconds
+    );
+
+    my $check = validation_for(
+        name             => '_check_new_params',
+        name_is_optional => 1,
+        params           => {
+            %units,
             end_of_month => {
-                type  => SCALAR, default => undef,
-                regex => qr/^(?:wrap|limit|preserve)$/
+                type     => t('EndOfMonthMode'),
+                optional => 1,
             },
+        },
+    );
+
+    sub new {
+        my $class = shift;
+        my %p     = $check->(@_);
+
+        my $self = bless {}, $class;
+
+        $self->{months} = ( $p{years} * 12 ) + $p{months};
+
+        $self->{days} = ( $p{weeks} * 7 ) + $p{days};
+
+        $self->{minutes} = ( $p{hours} * 60 ) + $p{minutes};
+
+        $self->{seconds} = $p{seconds};
+
+        if ( $p{nanoseconds} ) {
+            $self->{nanoseconds} = $p{nanoseconds};
+            $self->_normalize_nanoseconds;
         }
-    );
+        else {
 
-    my $self = bless {}, $class;
+            # shortcut - if they don't need nanoseconds
+            $self->{nanoseconds} = 0;
+        }
 
-    $self->{months} = ( $p{years} * 12 ) + $p{months};
+        $self->{end_of_month} = (
+              defined $p{end_of_month} ? $p{end_of_month}
+            : $self->{months} < 0      ? 'preserve'
+            :                            'wrap'
+        );
 
-    $self->{days} = ( $p{weeks} * 7 ) + $p{days};
-
-    $self->{minutes} = ( $p{hours} * 60 ) + $p{minutes};
-
-    $self->{seconds} = $p{seconds};
-
-    if ( $p{nanoseconds} ) {
-        $self->{nanoseconds} = $p{nanoseconds};
-        $self->_normalize_nanoseconds;
+        return $self;
     }
-    else {
-
-        # shortcut - if they don't need nanoseconds
-        $self->{nanoseconds} = 0;
-    }
-
-    $self->{end_of_month} = (
-          defined $p{end_of_month} ? $p{end_of_month}
-        : $self->{months} < 0      ? 'preserve'
-        :                            'wrap'
-    );
-
-    return $self;
 }
 
 # make the signs of seconds, nanos the same; 0 < abs(nanos) < MAX_NANOS
@@ -230,32 +250,53 @@ sub add_duration {
 sub add {
     my $self = shift;
 
-    return $self->add_duration( ( ref $self )->new(@_) );
+    return $self->add_duration( $self->_duration_object_from_args(@_) );
 }
-
-sub subtract_duration { return $_[0]->add_duration( $_[1]->inverse ) }
 
 sub subtract {
     my $self = shift;
 
-    return $self->subtract_duration( ( ref $self )->new(@_) );
+    return $self->subtract_duration( $self->_duration_object_from_args(@_) );
 }
 
-sub multiply {
-    my $self       = shift;
-    my $multiplier = shift;
+# Syntactic sugar for add and subtract: use a duration object if it's
+# supplied, otherwise build a new one from the arguments.
+sub _duration_object_from_args {
+    my $self = shift;
 
-    foreach my $u (@all_units) {
-        $self->{$u} *= $multiplier;
+    return $_[0]
+        if @_ == 1 && blessed( $_[0] ) && $_[0]->isa(__PACKAGE__);
+
+    return __PACKAGE__->new(@_);
+}
+
+sub subtract_duration { return $_[0]->add_duration( $_[1]->inverse ) }
+
+{
+    my $check = validation_for(
+        name             => '_check_multiply_params',
+        name_is_optional => 1,
+        params           => [
+            { type => t('Int') },
+        ],
+    );
+
+    sub multiply {
+        my $self = shift;
+        my ($multiplier) = $check->(@_);
+
+        foreach my $u (@all_units) {
+            $self->{$u} *= $multiplier;
+        }
+
+        $self->_normalize_nanoseconds if $self->{nanoseconds};
+
+        return $self;
     }
-
-    $self->_normalize_nanoseconds if $self->{nanoseconds};
-
-    return $self;
 }
 
 sub compare {
-    my ( $class, $dur1, $dur2, $dt ) = @_;
+    my ( undef, $dur1, $dur2, $dt ) = @_;
 
     $dt ||= DateTime->now;
 
@@ -285,7 +326,7 @@ sub _subtract_overload {
     ( $d1, $d2 ) = ( $d2, $d1 ) if $rev;
 
     Carp::croak(
-        "Cannot subtract a DateTime object from a DateTime::Duration object")
+        'Cannot subtract a DateTime object from a DateTime::Duration object')
         if DateTime::Helpers::isa( $d2, 'DateTime' );
 
     return $d1->clone->subtract_duration($d2);
@@ -296,7 +337,7 @@ sub _multiply_overload {
 
     my $new = $self->clone;
 
-    return $new->multiply(@_);
+    return $new->multiply(shift);
 }
 
 sub _compare_overload {
@@ -313,13 +354,15 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 DateTime::Duration - Duration objects for date math
 
 =head1 VERSION
 
-version 1.20
+version 1.49
 
 =head1 SYNOPSIS
 
@@ -421,8 +464,8 @@ of the month the new date will also be. For instance, adding one
 month to Feb 29, 2000 will result in Mar 31, 2000.
 
 For positive durations, the "end_of_month" parameter defaults to wrap.
-For negative durations, the default is "limit". This should match how
-most people "intuitively" expect datetime math to work.
+For negative durations, the default is "preserve". This should match
+how most people "intuitively" expect datetime math to work.
 
 =head2 $dur->clone()
 
@@ -514,13 +557,12 @@ Adds or subtracts one duration from another.
 
 =head2 $dur->add( ... ), $dur->subtract( ... )
 
-Syntactic sugar for addition and subtraction. The parameters given to
-these methods are used to create a new object, which is then passed to
-C<add_duration()> or C<subtract_duration()>, as appropriate.
+These accept either constructor parameters for a new C<DateTime::Duration>
+object or an already-constructed duration object.
 
 =head2 $dur->multiply( $number )
 
-Multiplies each unit in the by the specified number.
+Multiplies each unit in the by the specified integer number.
 
 =head2 DateTime::Duration->compare( $duration1, $duration2, $base_datetime )
 
@@ -586,16 +628,27 @@ Comparison is B<not> overloaded. If you attempt to compare durations
 using C<< <=> >> or C<cmp>, then an exception will be thrown!  Use the
 C<compare()> class method instead.
 
-=head1 SUPPORT
-
-Support for this module is provided via the datetime@perl.org email
-list. See http://lists.perl.org/ for more details.
-
 =head1 SEE ALSO
 
 datetime@perl.org mailing list
 
 http://datetime.perl.org/
+
+=head1 SUPPORT
+
+Support for this module is provided via the datetime@perl.org email
+list. See http://lists.perl.org/ for more details.
+
+Bugs may be submitted at L<https://github.com/houseabsolute/DateTime.pm/issues>.
+
+There is a mailing list available for users of this distribution,
+L<mailto:datetime@perl.org>.
+
+I am also usually active on IRC as 'autarch' on C<irc://irc.perl.org>.
+
+=head1 SOURCE
+
+The source code repository for DateTime can be found at L<https://github.com/houseabsolute/DateTime.pm>.
 
 =head1 AUTHOR
 
@@ -603,10 +656,13 @@ Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is Copyright (c) 2015 by Dave Rolsky.
+This software is Copyright (c) 2003 - 2018 by Dave Rolsky.
 
 This is free software, licensed under:
 
   The Artistic License 2.0 (GPL Compatible)
+
+The full text of the license can be found in the
+F<LICENSE> file included with this distribution.
 
 =cut

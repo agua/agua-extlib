@@ -365,7 +365,7 @@ BEGIN {
 
 =item $guard = guard { CODE }
 
-This function creates a special object that, when called, will execute
+This function creates a special object that, when destroyed, will execute
 the code block.
 
 This is often handy in continuation-passing style code to clean up some
@@ -484,6 +484,12 @@ Redirects program standard output into the specified filename, similar to C<<
 
 Appends program standard output to the referenced scalar. The condvar will
 not be signalled before EOF or an error is signalled.
+
+Specifying the same scalar in multiple ">" pairs is allowed, e.g. to
+redirect both stdout and stderr into the same scalar:
+
+    ">"  => \$output,
+    "2>" => \$output,
 
 =item ">" => $filehandle
 
@@ -821,7 +827,7 @@ sub idn_nameprep($;$) {
             # not in valid class, search for mapping
             utf8::encode $chr; # the imap table is in utf-8
             (my $rep = index $uts46_imap, "\x00$chr") >= 0
-               or Carp::croak "$_[0]: disallowed characters ($chr) during idn_nameprep" . unpack "H*", $chr;
+               or Carp::croak "$_[0]: disallowed characters (U+" . (unpack "H*", $chr) . ") during idn_nameprep";
 
             (substr $uts46_imap, $rep, 128) =~ /\x00 .[\x80-\xbf]* ([^\x00]*) \x00/x
                or die "FATAL: idn_nameprep imap table has unexpected contents";

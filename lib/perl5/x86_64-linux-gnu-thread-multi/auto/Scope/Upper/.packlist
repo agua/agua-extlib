@@ -1,7 +1,2 @@
-/mnt/repos/private/syoung/aguadev/lib/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/Scope/Upper.pm
-/mnt/repos/private/syoung/aguadev/lib/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/auto/Scope/Upper/Upper.bs
-/mnt/repos/private/syoung/aguadev/lib/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/auto/Scope/Upper/Upper.so
-/usr/local/lib/perl/5.18.2/Scope/Upper.pm
-/usr/local/lib/perl/5.18.2/auto/Scope/Upper/Upper.bs
-/usr/local/lib/perl/5.18.2/auto/Scope/Upper/Upper.so
-/usr/local/man/man3/Scope::Upper.3pm
+/mnt/repos/agua/flow/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/Scope/Upper.pm
+/mnt/repos/agua/flow/extlib/lib/perl5/x86_64-linux-gnu-thread-multi/auto/Scope/Upper/Upper.so

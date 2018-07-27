@@ -1,5 +1,5 @@
 package Moose::Exception::AttributeValueIsNotDefined;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use Moose;
 extends 'Moose::Exception';
@@ -18,4 +18,5 @@ sub _build_message {
     . $self->attribute->name . " is not defined";
 }
 
+__PACKAGE__->meta->make_immutable;
 1;

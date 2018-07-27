@@ -1,9 +1,3 @@
-/mnt/repos/private/syoung/aguadev/lib/extlib/lib/perl5/Text/Diff.pm
-/mnt/repos/private/syoung/aguadev/lib/extlib/lib/perl5/Text/Diff/Config.pm
-/mnt/repos/private/syoung/aguadev/lib/extlib/lib/perl5/Text/Diff/Table.pm
-/usr/local/man/man3/Text::Diff.3pm
-/usr/local/man/man3/Text::Diff::Config.3pm
-/usr/local/man/man3/Text::Diff::Table.3pm
-/usr/local/share/perl/5.18.2/Text/Diff.pm
-/usr/local/share/perl/5.18.2/Text/Diff/Config.pm
-/usr/local/share/perl/5.18.2/Text/Diff/Table.pm
+/mnt/repos/agua/flow/extlib/lib/perl5/Text/Diff.pm
+/mnt/repos/agua/flow/extlib/lib/perl5/Text/Diff/Config.pm
+/mnt/repos/agua/flow/extlib/lib/perl5/Text/Diff/Table.pm

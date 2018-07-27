@@ -1,5 +1,6 @@
-package Sub::Name; # git description: v0.13-7-g79187d2
-# ABSTRACT: (re)name a sub
+package Sub::Name; # git description: v0.20-2-gc0a0e62
+# ABSTRACT: (Re)name a sub
+# KEYWORDS: subroutine function utility name rename symbol
 
 #pod =pod
 #pod
@@ -53,7 +54,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '0.14';
+our $VERSION = '0.21';
 
 use Exporter 5.57 'import';
 
@@ -76,11 +77,11 @@ __END__
 
 =head1 NAME
 
-Sub::Name - (re)name a sub
+Sub::Name - (Re)name a sub
 
 =head1 VERSION
 
-version 0.14
+version 0.21
 
 =head1 SYNOPSIS
 
@@ -125,13 +126,21 @@ L<Sub::Util> - set_subname is another implementation of C<subname>
 
 =for stopwords cPanel
 
+=head1 SUPPORT
+
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=Sub-Name>
+(or L<bug-Sub-Name@rt.cpan.org|mailto:bug-Sub-Name@rt.cpan.org>).
+
+There is also an irc channel available for users of this distribution, at
+L<C<#toolchain> on C<irc.perl.org>|irc://irc.perl.org/#toolchain>.
+
 =head1 AUTHOR
 
 Matthijs van Duin <xmath@cpan.org>
 
 =head1 CONTRIBUTORS
 
-=for stopwords Karen Etheridge Florian Ragwitz Matthijs van Duin Reini Urban Dagfinn Ilmari Mannsåker gfx J.R. Mash
+=for stopwords Karen Etheridge Leon Timmermans Florian Ragwitz Reini Urban Matthijs van Duin gfx Dagfinn Ilmari Mannsåker Aristotle Pagaltzis J.R. Mash Alexander Bluhm
 
 =over 4
 
@@ -141,11 +150,11 @@ Karen Etheridge <ether@cpan.org>
 
 =item *
 
-Florian Ragwitz <rafl@debian.org>
+Leon Timmermans <fawaka@gmail.com>
 
 =item *
 
-Matthijs van Duin <xmath-no-spam@nospam.cpan.org>
+Florian Ragwitz <rafl@debian.org>
 
 =item *
 
@@ -153,7 +162,7 @@ Reini Urban <rurban@cpanel.net>
 
 =item *
 
-Dagfinn Ilmari Mannsåker <ilmari@ilmari.org>
+Matthijs van Duin <xmath-no-spam@nospam.cpan.org>
 
 =item *
 
@@ -161,7 +170,19 @@ gfx <gfuji@cpan.org>
 
 =item *
 
+Dagfinn Ilmari Mannsåker <ilmari@ilmari.org>
+
+=item *
+
+Aristotle Pagaltzis <pagaltzis@gmx.de>
+
+=item *
+
 J.R. Mash <jmash.code@gmail.com>
+
+=item *
+
+Alexander Bluhm <alexander.bluhm@gmx.net>
 
 =back
 

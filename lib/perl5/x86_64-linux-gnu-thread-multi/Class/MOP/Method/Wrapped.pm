@@ -1,5 +1,5 @@
 package Class::MOP::Method::Wrapped;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -38,13 +38,13 @@ my $_build_wrapped_method = sub {
             return wantarray ? @rval : $rval[0];
         }
     }
-    elsif (@$before && !@$after) {
+    elsif (@$before) {
         $modifier_table->{cache} = sub {
             for my $c (@$before) { $c->(@_) };
             return $around->{cache}->(@_);
         }
     }
-    elsif (@$after && !@$before) {
+    elsif (@$after) {
         $modifier_table->{cache} = sub {
             my @rval;
             ((defined wantarray) ?
@@ -217,7 +217,7 @@ Class::MOP::Method::Wrapped - Method Meta Object for methods with before/after/a
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -323,7 +323,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

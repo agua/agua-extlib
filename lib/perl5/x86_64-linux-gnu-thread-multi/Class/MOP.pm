@@ -1,5 +1,5 @@
 package Class::MOP;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -20,7 +20,7 @@ use Class::MOP::Attribute;
 use Class::MOP::Method;
 
 BEGIN {
-    *IS_RUNNING_ON_5_10 = ($] < 5.009_005)
+    *IS_RUNNING_ON_5_10 = ("$]" < 5.009_005)
         ? sub () { 0 }
         : sub () { 1 };
 
@@ -94,7 +94,7 @@ sub is_class_loaded {
 
 sub _definition_context {
     my %context;
-    @context{qw(package file line)} = caller(1);
+    @context{qw(package file line)} = caller(0);
 
     return (
         definition_context => \%context,
@@ -796,7 +796,7 @@ Class::MOP - A Meta Object Protocol for Perl 5
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -1119,8 +1119,6 @@ L<http://citeseer.ist.psu.edu/37617.html>
 
 =over 4
 
-=item L<http://svn.openfoundry.org/pugs/misc/Perl-MetaModel/>
-
 =item L<http://github.com/perl6/p5-modules/tree/master/Perl6-ObjectSpace/>
 
 =back
@@ -1216,7 +1214,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

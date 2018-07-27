@@ -1,12 +1,11 @@
 package MooseX::Types::Base;
 # ABSTRACT: Type library base class
 
-our $VERSION = '0.46';
+our $VERSION = '0.50';
 
 use Moose;
 
 use Carp::Clan                      qw( ^MooseX::Types );
-use MooseX::Types::Util             qw( filter_tags );
 use Sub::Exporter                   qw( build_exporter );
 use Moose::Util::TypeConstraints    qw( find_type_constraint );
 
@@ -44,7 +43,7 @@ sub import {
     delete @ex_spec{ qw(-wrapper -into -full) };
 
     unless ($options) {
-        $options = {foo => 23};
+        $options = {};
         unshift @args, $options;
     }
 
@@ -77,16 +76,19 @@ sub import {
             };
 
         # the check helper
+        my $check_name = "is_${type_short}";
         push @{ $ex_spec{exports} },
-            "is_${type_short}",
+            $check_name,
             sub { $wrapper->check_export_generator($type_short, $type_full, $undef_msg) };
 
         # only export coercion helper if full (for libraries) or coercion is defined
         next TYPE
             unless $options->{ -full }
             or ($type_cons and $type_cons->has_coercion);
+
+        my $coercion_name = "to_${type_short}";
         push @{ $ex_spec{exports} },
-            "to_${type_short}",
+            $coercion_name,
             sub { $wrapper->coercion_export_generator($type_short, $type_full, $undef_msg) };
         $ex_util{ $type_short }{to}++;  # shortcut to remember this exists
     }
@@ -297,7 +299,7 @@ MooseX::Types::Base - Type library base class
 
 =head1 VERSION
 
-version 0.46
+version 0.50
 
 =head1 DESCRIPTION
 
@@ -363,11 +365,22 @@ Get a C<role_type> registered in this library by role name.
 
 L<MooseX::Types::Moose>
 
+=head1 SUPPORT
+
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-Types>
+(or L<bug-MooseX-Types@rt.cpan.org|mailto:bug-MooseX-Types@rt.cpan.org>).
+
+There is also a mailing list available for users of this distribution, at
+L<http://lists.perl.org/list/moose.html>.
+
+There is also an irc channel available for users of this distribution, at
+L<C<#moose> on C<irc.perl.org>|irc://irc.perl.org/#moose>.
+
 =head1 AUTHOR
 
 Robert "phaylon" Sedlacek <rs@474.at>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT AND LICENCE
 
 This software is copyright (c) 2007 by Robert "phaylon" Sedlacek.
 

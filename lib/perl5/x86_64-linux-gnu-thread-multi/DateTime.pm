@@ -1,22 +1,28 @@
+## no critic (Modules::ProhibitExcessMainComplexity)
 package DateTime;
 
-use 5.008001;
+use 5.008004;
 
 use strict;
 use warnings;
 use warnings::register;
+use namespace::autoclean 0.19;
 
-our $VERSION = '1.20';
+our $VERSION = '1.49';
 
 use Carp;
 use DateTime::Duration;
 use DateTime::Helpers;
-use DateTime::Locale 0.41;
-use DateTime::TimeZone 1.74;
-use Params::Validate 1.03
-    qw( validate validate_pos UNDEF SCALAR BOOLEAN HASHREF OBJECT );
-use POSIX qw(floor);
+use DateTime::Locale 1.06;
+use DateTime::TimeZone 2.02;
+use DateTime::Types;
+use POSIX qw( floor fmod );
+use Params::ValidationCompiler 0.26 qw( validation_for );
+use Scalar::Util qw( blessed );
 use Try::Tiny;
+
+## no critic (Variables::ProhibitPackageVars)
+our $IsPurePerl;
 
 {
     my $loaded = 0;
@@ -31,8 +37,8 @@ use Try::Tiny;
                 : 42
             );
 
-            $loaded               = 1;
-            $DateTime::IsPurePerl = 0;
+            $loaded     = 1;
+            $IsPurePerl = 0;
         }
         catch {
             die $_ if $_ && $_ !~ /object version|loadable object/;
@@ -40,6 +46,7 @@ use Try::Tiny;
     }
 
     if ($loaded) {
+        ## no critic (Variables::ProtectPrivateVars)
         require DateTime::PPExtra
             unless defined &DateTime::_normalize_tai_seconds;
     }
@@ -55,37 +62,47 @@ use Try::Tiny;
 # see: "Calling conventions for binary operations" in overload docs.
 #
 use overload (
-    'fallback' => 1,
-    '<=>'      => '_compare_overload',
-    'cmp'      => '_string_compare_overload',
-    '""'       => '_stringify',
-    '-'        => '_subtract_overload',
-    '+'        => '_add_overload',
-    'eq'       => '_string_equals_overload',
-    'ne'       => '_string_not_equals_overload',
+    fallback => 1,
+    '<=>'    => '_compare_overload',
+    'cmp'    => '_string_compare_overload',
+    q{""}    => 'stringify',
+    bool     => sub {1},
+    '-'      => '_subtract_overload',
+    '+'      => '_add_overload',
+    'eq'     => '_string_equals_overload',
+    'ne'     => '_string_not_equals_overload',
 );
 
 # Have to load this after overloading is defined, after BEGIN blocks
 # or else weird crashes ensue
 require DateTime::Infinite;
 
-use constant MAX_NANOSECONDS => 1_000_000_000;    # 1E9 = almost 32 bits
+sub MAX_NANOSECONDS () {1_000_000_000}                  # 1E9 = almost 32 bits
+sub INFINITY ()        { 100**100**100**100 }
+sub NEG_INFINITY ()    { -1 * ( 100**100**100**100 ) }
+sub NAN ()             { INFINITY - INFINITY }
 
-use constant INFINITY     => ( 100**100**100**100 );
-use constant NEG_INFINITY => -1 * ( 100**100**100**100 );
-use constant NAN          => INFINITY - INFINITY;
+sub SECONDS_PER_DAY () {86400}
 
-use constant SECONDS_PER_DAY => 86400;
+sub duration_class () {'DateTime::Duration'}
 
-use constant duration_class => 'DateTime::Duration';
-
-my ( @MonthLengths, @LeapYearMonthLengths );
+my (
+    @MonthLengths,
+    @LeapYearMonthLengths,
+    @QuarterLengths,
+    @LeapYearQuarterLengths,
+);
 
 BEGIN {
     @MonthLengths = ( 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 );
 
     @LeapYearMonthLengths = @MonthLengths;
     $LeapYearMonthLengths[1]++;
+
+    @QuarterLengths = ( 90, 91, 92, 92 );
+
+    @LeapYearQuarterLengths = @QuarterLengths;
+    $LeapYearQuarterLengths[0]++;
 }
 
 {
@@ -96,7 +113,7 @@ BEGIN {
     my $DefaultLocale;
 
     sub DefaultLocale {
-        my $class = shift;
+        shift;
 
         if (@_) {
             my $lang = shift;
@@ -106,103 +123,66 @@ BEGIN {
 
         return $DefaultLocale;
     }
-
-    # backwards compat
-    *DefaultLanguage = \&DefaultLocale;
 }
-__PACKAGE__->DefaultLocale('en_US');
+__PACKAGE__->DefaultLocale('en-US');
 
-my $BasicValidate = {
-    year => {
-        type      => SCALAR,
-        callbacks => {
-            'is an integer' => sub { $_[0] =~ /^-?\d+$/ }
+{
+    my $validator = validation_for(
+        name             => '_check_new_params',
+        name_is_optional => 1,
+        params           => {
+            year  => { type => t('Year') },
+            month => {
+                type    => t('Month'),
+                default => 1,
+            },
+            day => {
+                type    => t('DayOfMonth'),
+                default => 1,
+            },
+            hour => {
+                type    => t('Hour'),
+                default => 0,
+            },
+            minute => {
+                type    => t('Minute'),
+                default => 0,
+            },
+            second => {
+                type    => t('Second'),
+                default => 0,
+            },
+            nanosecond => {
+                type    => t('Nanosecond'),
+                default => 0,
+            },
+            locale => {
+                type     => t('Locale'),
+                optional => 1,
+            },
+            formatter => {
+                type     => t('Formatter'),
+                optional => 1,
+            },
+            time_zone => {
+                type     => t('TimeZone'),
+                optional => 1,
+            },
         },
-    },
-    month => {
-        type      => SCALAR,
-        default   => 1,
-        callbacks => {
-            'an integer between 1 and 12' =>
-                sub { $_[0] =~ /^\d+$/ && $_[0] >= 1 && $_[0] <= 12 }
-        },
-    },
-    day => {
-        type      => SCALAR,
-        default   => 1,
-        callbacks => {
-            'an integer which is a possible valid day of month' =>
-                sub { $_[0] =~ /^\d+$/ && $_[0] >= 1 && $_[0] <= 31 }
-        },
-    },
-    hour => {
-        type      => SCALAR,
-        default   => 0,
-        callbacks => {
-            'an integer between 0 and 23' =>
-                sub { $_[0] =~ /^\d+$/ && $_[0] >= 0 && $_[0] <= 23 },
-        },
-    },
-    minute => {
-        type      => SCALAR,
-        default   => 0,
-        callbacks => {
-            'an integer between 0 and 59' =>
-                sub { $_[0] =~ /^\d+$/ && $_[0] >= 0 && $_[0] <= 59 },
-        },
-    },
-    second => {
-        type      => SCALAR,
-        default   => 0,
-        callbacks => {
-            'an integer between 0 and 61' =>
-                sub { $_[0] =~ /^\d+$/ && $_[0] >= 0 && $_[0] <= 61 },
-        },
-    },
-    nanosecond => {
-        type      => SCALAR,
-        default   => 0,
-        callbacks => {
-            'a positive integer' => sub { $_[0] =~ /^\d+$/ && $_[0] >= 0 },
-        }
-    },
-    locale => {
-        type    => SCALAR | OBJECT,
-        default => undef
-    },
-    language => {
-        type     => SCALAR | OBJECT,
-        optional => 1
-    },
-    formatter => {
-        type      => UNDEF | SCALAR | OBJECT,
-        optional  => 1,
-        callbacks => {
-            'can format_datetime' =>
-                sub { defined $_[0] ? $_[0]->can('format_datetime') : 1 },
-        },
-    },
-};
+    );
 
-my $NewValidate = {
-    %$BasicValidate,
-    time_zone => {
-        type    => SCALAR | OBJECT,
-        default => 'floating'
-    },
-};
+    sub new {
+        my $class = shift;
+        my %p     = $validator->(@_);
 
-sub new {
-    my $class = shift;
-    my %p = validate( @_, $NewValidate );
+        Carp::croak(
+            "Invalid day of month (day = $p{day} - month = $p{month} - year = $p{year})\n"
+            )
+            if $p{day} > 28
+            && $p{day} > $class->_month_length( $p{year}, $p{month} );
 
-    Carp::croak(
-        "Invalid day of month (day = $p{day} - month = $p{month} - year = $p{year})\n"
-        )
-        if $p{day} > 28
-        && $p{day} > $class->_month_length( $p{year}, $p{month} );
-
-    return $class->_new(%p);
+        return $class->_new(%p);
+    }
 }
 
 sub _new {
@@ -213,18 +193,16 @@ sub _new {
         if ref $class;
 
     # If this method is called from somewhere other than new(), then some of
-    # these default may not get applied.
-    $p{month}      = 1          unless exists $p{month};
-    $p{day}        = 1          unless exists $p{day};
-    $p{hour}       = 0          unless exists $p{hour};
-    $p{minute}     = 0          unless exists $p{minute};
-    $p{second}     = 0          unless exists $p{second};
-    $p{nanosecond} = 0          unless exists $p{nanosecond};
-    $p{time_zone}  = 'floating' unless exists $p{time_zone};
+    # these defaults may not get applied.
+    $p{month}      = 1                          unless exists $p{month};
+    $p{day}        = 1                          unless exists $p{day};
+    $p{hour}       = 0                          unless exists $p{hour};
+    $p{minute}     = 0                          unless exists $p{minute};
+    $p{second}     = 0                          unless exists $p{second};
+    $p{nanosecond} = 0                          unless exists $p{nanosecond};
+    $p{time_zone}  = $class->_default_time_zone unless exists $p{time_zone};
 
     my $self = bless {}, $class;
-
-    $p{locale} = delete $p{language} if exists $p{language};
 
     $self->_set_locale( $p{locale} );
 
@@ -273,12 +251,18 @@ sub _new {
             # If true, this means that the actual calculated leap
             # second does not occur in the second given to new()
             ( $self->{utc_rd_secs} - 86399 < $p{second} - 59 )
-            ) {
+        ) {
             Carp::croak("Invalid second value ($p{second})\n");
         }
     }
 
     return $self;
+}
+
+# Warning: do not use this environment variable unless you have no choice in
+# the matter.
+sub _default_time_zone {
+    return $ENV{PERL_DATETIME_DEFAULT_TZ} || 'floating';
 }
 
 sub _set_locale {
@@ -348,7 +332,7 @@ sub _handle_offset_modifier {
                 || (   $offset == 0
                     && $self->{local_rd_secs} > 86399 )
             )
-            ) {
+        ) {
             my $mod
                 = $self->_day_length( $utc_rd_days - 1 ) - SECONDS_PER_DAY;
 
@@ -472,40 +456,69 @@ sub _calc_local_components {
 }
 
 {
-    my $spec = {
-        epoch     => { regex => qr/^-?(?:\d+(?:\.\d*)?|\.\d+)$/ },
-        locale    => { type  => SCALAR | OBJECT, optional => 1 },
-        language  => { type  => SCALAR | OBJECT, optional => 1 },
-        time_zone => { type  => SCALAR | OBJECT, optional => 1 },
-        formatter => {
-            type     => SCALAR | OBJECT, can => 'format_datetime',
-            optional => 1
+    my $validator = validation_for(
+        name             => '_check_from_epoch_params',
+        name_is_optional => 1,
+        params           => {
+            epoch     => { type => t('Num') },
+            formatter => {
+                type     => t('Formatter'),
+                optional => 1
+            },
+            locale => {
+                type     => t('Locale'),
+                optional => 1
+            },
+            time_zone => {
+                type     => t('TimeZone'),
+                optional => 1
+            },
         },
-    };
+    );
 
     sub from_epoch {
         my $class = shift;
-        my %p = validate( @_, $spec );
+        my %p     = $validator->(@_);
 
         my %args;
 
-        # Epoch may come from Time::HiRes, so it may not be an integer.
-        my ( $int, $dec ) = $p{epoch} =~ /^(-?\d+)?(\.\d+)?/;
-        $int ||= 0;
+        # This does two things. First, if given a negative non-integer epoch,
+        # it will round the epoch _down_ to the next second and then adjust
+        # the nanoseconds to be positive. In other words, -0.5 corresponds to
+        # a second of -1 and a nanosecond value of 500,000. Before this code
+        # was implemented our handling of negative non-integer epochs was
+        # quite broken, and would end up rounding some values up, so that -0.5
+        # become 0.5 (which is obviously wrong!).
+        #
+        # Second, it rounds any decimal values to the nearest microsecond
+        # (1E6). Here's what Christian Hansen, who wrote this patch, says:
+        #
+        #     Perl is typically compiled with NV as a double. A double with a
+        #     significand precision of 53 bits can only represent a nanosecond
+        #     epoch without loss of precision if the duration from zero epoch
+        #     is less than ≈ ±104 days. With microseconds the duration is
+        #     ±104,000 days, which is ≈ ±285 years.
+        if ( int $p{epoch} != $p{epoch} ) {
+            my ( $floor, $nano, $second );
 
-        $args{nanosecond} = int( $dec * MAX_NANOSECONDS )
-            if $dec;
+            $floor = $nano = fmod( $p{epoch}, 1.0 );
+            $second = floor( $p{epoch} - $floor );
+            if ( $nano < 0 ) {
+                $nano += 1;
+            }
+            $p{epoch}         = $second + floor( $floor - $nano );
+            $args{nanosecond} = floor( $nano * 1E6 + 0.5 ) * 1E3;
+        }
 
         # Note, for very large negative values this may give a
         # blatantly wrong answer.
         @args{qw( second minute hour day month year )}
-            = ( gmtime($int) )[ 0 .. 5 ];
+            = ( gmtime( $p{epoch} ) )[ 0 .. 5 ];
         $args{year} += 1900;
         $args{month}++;
 
         my $self = $class->_new( %p, %args, time_zone => 'UTC' );
 
-        my $tz = $p{time_zone};
         $self->_maybe_future_dst_warning( $self->year(), $p{time_zone} );
 
         $self->set_time_zone( $p{time_zone} ) if exists $p{time_zone};
@@ -543,24 +556,31 @@ sub _core_time {
 sub today { shift->now(@_)->truncate( to => 'day' ) }
 
 {
-    my $spec = {
-        object => {
-            type => OBJECT,
-            can  => 'utc_rd_values',
+    my $validator = validation_for(
+        name             => '_check_from_object_params',
+        name_is_optional => 1,
+        params           => {
+            object => { type => t('ConvertibleObject') },
+            locale => {
+                type     => t('Locale'),
+                optional => 1,
+            },
+            formatter => {
+                type     => t('Formatter'),
+                optional => 1,
+            },
         },
-        locale    => { type => SCALAR | OBJECT, optional => 1 },
-        language  => { type => SCALAR | OBJECT, optional => 1 },
-        formatter => {
-            type     => SCALAR | OBJECT, can => 'format_datetime',
-            optional => 1
-        },
-    };
+    );
 
     sub from_object {
         my $class = shift;
-        my %p = validate( @_, $spec );
+        my %p     = $validator->(@_);
 
         my $object = delete $p{object};
+
+        if ( $object->isa('DateTime::Infinite') ) {
+            return $object->clone;
+        }
 
         my ( $rd_days, $rd_secs, $rd_nanosecs ) = $object->utc_rd_values;
 
@@ -594,30 +614,63 @@ sub today { shift->now(@_)->truncate( to => 'day' ) }
             $new->set_time_zone( $object->time_zone );
         }
         else {
-            $new->set_time_zone('floating');
+            $new->set_time_zone( $class->_default_time_zone );
         }
 
         return $new;
     }
 }
 
-my $LastDayOfMonthValidate = {%$NewValidate};
-foreach ( keys %$LastDayOfMonthValidate ) {
-    my %copy = %{ $LastDayOfMonthValidate->{$_} };
+{
+    my $validator = validation_for(
+        name             => '_check_last_day_of_month_params',
+        name_is_optional => 1,
+        params           => {
+            year  => { type => t('Year') },
+            month => { type => t('Month') },
+            day   => {
+                type    => t('DayOfMonth'),
+                default => 1,
+            },
+            hour => {
+                type    => t('Hour'),
+                default => 0,
+            },
+            minute => {
+                type    => t('Minute'),
+                default => 0,
+            },
+            second => {
+                type    => t('Second'),
+                default => 0,
+            },
+            nanosecond => {
+                type    => t('Nanosecond'),
+                default => 0,
+            },
+            locale => {
+                type     => t('Locale'),
+                optional => 1,
+            },
+            formatter => {
+                type     => t('Formatter'),
+                optional => 1,
+            },
+            time_zone => {
+                type     => t('TimeZone'),
+                optional => 1,
+            },
+        },
+    );
 
-    delete $copy{default};
-    $copy{optional} = 1 unless $_ eq 'year' || $_ eq 'month';
+    sub last_day_of_month {
+        my $class = shift;
+        my %p     = $validator->(@_);
 
-    $LastDayOfMonthValidate->{$_} = \%copy;
-}
+        my $day = $class->_month_length( $p{year}, $p{month} );
 
-sub last_day_of_month {
-    my $class = shift;
-    my %p = validate( @_, $LastDayOfMonthValidate );
-
-    my $day = $class->_month_length( $p{year}, $p{month} );
-
-    return $class->_new( %p, day => $day );
+        return $class->_new( %p, day => $day );
+    }
 }
 
 sub _month_length {
@@ -628,49 +681,70 @@ sub _month_length {
     );
 }
 
-my $FromDayOfYearValidate = {%$NewValidate};
-foreach ( keys %$FromDayOfYearValidate ) {
-    next if $_ eq 'month' || $_ eq 'day';
-
-    my %copy = %{ $FromDayOfYearValidate->{$_} };
-
-    delete $copy{default};
-    $copy{optional} = 1 unless $_ eq 'year' || $_ eq 'month';
-
-    $FromDayOfYearValidate->{$_} = \%copy;
-}
-$FromDayOfYearValidate->{day_of_year} = {
-    type      => SCALAR,
-    callbacks => {
-        'is between 1 and 366' => sub { $_[0] >= 1 && $_[0] <= 366 }
-    }
-};
-
-sub from_day_of_year {
-    my $class = shift;
-    my %p = validate( @_, $FromDayOfYearValidate );
-
-    Carp::croak("$p{year} is not a leap year.\n")
-        if $p{day_of_year} == 366 && !$class->_is_leap_year( $p{year} );
-
-    my $month = 1;
-    my $day   = delete $p{day_of_year};
-
-    if ( $day > 31 ) {
-        my $length = $class->_month_length( $p{year}, $month );
-
-        while ( $day > $length ) {
-            $day -= $length;
-            $month++;
-            $length = $class->_month_length( $p{year}, $month );
-        }
-    }
-
-    return $class->_new(
-        %p,
-        month => $month,
-        day   => $day,
+{
+    my $validator = validation_for(
+        name             => '_check_from_day_of_year_params',
+        name_is_optional => 1,
+        params           => {
+            year        => { type => t('Year') },
+            day_of_year => { type => t('DayOfYear') },
+            hour        => {
+                type    => t('Hour'),
+                default => 0,
+            },
+            minute => {
+                type    => t('Minute'),
+                default => 0,
+            },
+            second => {
+                type    => t('Second'),
+                default => 0,
+            },
+            nanosecond => {
+                type    => t('Nanosecond'),
+                default => 0,
+            },
+            locale => {
+                type     => t('Locale'),
+                optional => 1,
+            },
+            formatter => {
+                type     => t('Formatter'),
+                optional => 1,
+            },
+            time_zone => {
+                type     => t('TimeZone'),
+                optional => 1,
+            },
+        },
     );
+
+    sub from_day_of_year {
+        my $class = shift;
+        my %p     = $validator->(@_);
+
+        Carp::croak("$p{year} is not a leap year.\n")
+            if $p{day_of_year} == 366 && !$class->_is_leap_year( $p{year} );
+
+        my $month = 1;
+        my $day   = delete $p{day_of_year};
+
+        if ( $day > 31 ) {
+            my $length = $class->_month_length( $p{year}, $month );
+
+            while ( $day > $length ) {
+                $day -= $length;
+                $month++;
+                $length = $class->_month_length( $p{year}, $month );
+            }
+        }
+
+        return $class->_new(
+            %p,
+            month => $month,
+            day   => $day,
+        );
+    }
 }
 
 sub formatter { $_[0]->{formatter} }
@@ -791,7 +865,7 @@ sub ymd {
         $self->{local_c}{day}
     );
 }
-*date = \&ymd;
+*date = sub { shift->ymd(@_) };
 
 sub mdy {
     my ( $self, $sep ) = @_;
@@ -854,10 +928,10 @@ sub leap_seconds {
 
     return 0 if $self->{tz}->is_floating;
 
-    return DateTime->_accumulated_leap_seconds( $self->{utc_rd_days} );
+    return $self->_accumulated_leap_seconds( $self->{utc_rd_days} );
 }
 
-sub _stringify {
+sub stringify {
     my $self = shift;
 
     return $self->iso8601 unless $self->{formatter};
@@ -877,42 +951,72 @@ sub hms {
 }
 
 # don't want to override CORE::time()
-*DateTime::time = \&hms;
+*DateTime::time = sub { shift->hms(@_) };
 
-sub iso8601 { join 'T', $_[0]->ymd('-'), $_[0]->hms(':') }
-*datetime = \&iso8601;
+sub iso8601 { $_[0]->datetime('T') }
+
+sub datetime {
+    my ( $self, $sep ) = @_;
+    $sep = 'T' unless defined $sep;
+    return join $sep, $self->ymd('-'), $self->hms(':');
+}
 
 sub is_leap_year { $_[0]->_is_leap_year( $_[0]->year ) }
+
+sub month_length {
+    $_[0]->_month_length( $_[0]->year, $_[0]->month );
+}
+
+sub quarter_length {
+    return (
+          $_[0]->_is_leap_year( $_[0]->year )
+        ? $LeapYearQuarterLengths[ $_[0]->quarter - 1 ]
+        : $QuarterLengths[ $_[0]->quarter - 1 ]
+    );
+}
+
+sub year_length {
+    $_[0]->_is_leap_year( $_[0]->year ) ? 366 : 365;
+}
+
+sub is_last_day_of_month {
+    $_[0]->day == $_[0]->_month_length( $_[0]->year, $_[0]->month );
+}
+
+sub is_last_day_of_quarter {
+    $_[0]->day_of_quarter == $_[0]->quarter_length;
+}
+
+sub is_last_day_of_year {
+    $_[0]->day_of_year == $_[0]->year_length;
+}
 
 sub week {
     my $self = shift;
 
-    unless ( defined $self->{local_c}{week_year} ) {
+    $self->{utc_c}{week_year} ||= $self->_week_values;
 
-        # This algorithm was taken from Date::Calc's DateCalc.c file
-        my $jan_one_dow_m1
-            = ( ( $self->_ymd2rd( $self->year, 1, 1 ) + 6 ) % 7 );
+    return @{ $self->{utc_c}{week_year} }[ 0, 1 ];
+}
 
-        $self->{local_c}{week_number}
-            = int( ( ( $self->day_of_year - 1 ) + $jan_one_dow_m1 ) / 7 );
-        $self->{local_c}{week_number}++ if $jan_one_dow_m1 < 4;
+# This algorithm comes from
+# https://en.wikipedia.org/wiki/ISO_week_date#Calculating_the_week_number_of_a_given_date
+sub _week_values {
+    my $self = shift;
 
-        if ( $self->{local_c}{week_number} == 0 ) {
-            $self->{local_c}{week_year} = $self->year - 1;
-            $self->{local_c}{week_number}
-                = $self->_weeks_in_year( $self->{local_c}{week_year} );
-        }
-        elsif ($self->{local_c}{week_number} == 53
-            && $self->_weeks_in_year( $self->year ) == 52 ) {
-            $self->{local_c}{week_number} = 1;
-            $self->{local_c}{week_year}   = $self->year + 1;
-        }
-        else {
-            $self->{local_c}{week_year} = $self->year;
-        }
+    my $week
+        = int( ( ( $self->day_of_year - $self->day_of_week ) + 10 ) / 7 );
+
+    my $year = $self->year;
+    if ( $week == 0 ) {
+        $year--;
+        return [ $year, $self->_weeks_in_year($year) ];
+    }
+    elsif ( $week == 53 && $self->_weeks_in_year($year) == 52 ) {
+        return [ $year + 1, 1 ];
     }
 
-    return @{ $self->{local_c} }{ 'week_year', 'week_number' };
+    return [ $year, $week ];
 }
 
 sub _weeks_in_year {
@@ -960,7 +1064,6 @@ sub locale {
     Carp::carp('locale() is a read-only accessor') if @_ > 1;
     return $_[0]->{locale};
 }
-*language = \&locale;
 
 sub utc_rd_values {
     @{ $_[0] }{ 'utc_rd_days', 'utc_rd_secs', 'rd_nanosecs' };
@@ -1111,7 +1214,7 @@ sub jd { $_[0]->mjd + 2_400_000.5 }
         # yy is a weird special case, where it must be exactly 2 digits
         qr/yy/ => sub {
             my $year = $_[0]->year();
-            my $y2 = substr( $year, -2, 2 ) if length $year > 2;
+            my $y2 = length $year > 2 ? substr( $year, -2, 2 ) : $year;
             $y2 *= -1 if $year < 0;
             $_[0]->_zero_padded_number( 'yy', $y2 );
         },
@@ -1219,18 +1322,9 @@ sub jd { $_[0]->mjd + 2_400_000.5 }
         qr/(ss?)/ =>
             sub { $_[0]->_zero_padded_number( $1, $_[0]->second() ) },
 
-        # I'm not sure this is what is wanted (notably the trailing
-        # and leading zeros it can produce), but once again the LDML
-        # spec is not all that clear.
-        qr/(S+)/ => sub {
-            my $l   = length $1;
-            my $val = sprintf(
-                "%.${l}f",
-                $_[0]->fractional_second() - $_[0]->second()
-            );
-            $val =~ s/^0\.//;
-            $val || 0;
-        },
+        # The LDML spec is not 100% clear on how to truncate this field, but
+        # this way seems as good as anything.
+        qr/(S+)/ => sub { $_[0]->_format_nanosecs( length($1) ) },
         qr/A+/ =>
             sub { ( $_[0]->{local_rd_secs} * 1000 ) + $_[0]->millisecond() },
 
@@ -1264,22 +1358,14 @@ sub jd { $_[0]->mjd + 2_400_000.5 }
         return sprintf( "%0${size}d", $val );
     }
 
-    sub _space_padded_string {
-        my $self = shift;
-        my $size = length shift;
-        my $val  = shift;
-
-        return sprintf( "% ${size}s", $val );
-    }
-
     sub format_cldr {
         my $self = shift;
 
         # make a copy or caller's scalars get munged
-        my @patterns = @_;
+        my @p = @_;
 
         my @r;
-        foreach my $p (@patterns) {
+        foreach my $p (@p) {
             $p =~ s/\G
                     (?:
                       '((?:[^']|'')*)' # quote escaped bit of text
@@ -1315,6 +1401,7 @@ sub jd { $_[0]->mjd + 2_400_000.5 }
         my $self    = shift;
         my $pattern = shift;
 
+        ## no critic (ControlStructures::ProhibitCStyleForLoops)
         for ( my $i = 0; $i < @patterns; $i += 2 ) {
             if ( $pattern =~ /$patterns[$i]/ ) {
                 my $sub = $patterns[ $i + 1 ];
@@ -1481,7 +1568,8 @@ sub subtract_datetime {
     );
 }
 
-sub _adjust_for_positive_difference {
+sub _adjust_for_positive_difference
+{    ## no critic (Subroutines::ProhibitManyArgs)
     my (
         $self,
         $month1, $month2,
@@ -1529,12 +1617,11 @@ sub subtract_datetime_absolute {
     my $dt   = shift;
 
     my $utc_rd_secs1 = $self->utc_rd_as_seconds;
-    $utc_rd_secs1
-        += DateTime->_accumulated_leap_seconds( $self->{utc_rd_days} )
+    $utc_rd_secs1 += $self->_accumulated_leap_seconds( $self->{utc_rd_days} )
         if !$self->time_zone->is_floating;
 
     my $utc_rd_secs2 = $dt->utc_rd_as_seconds;
-    $utc_rd_secs2 += DateTime->_accumulated_leap_seconds( $dt->{utc_rd_days} )
+    $utc_rd_secs2 += $self->_accumulated_leap_seconds( $dt->{utc_rd_days} )
         if !$dt->time_zone->is_floating;
 
     my $seconds     = $utc_rd_secs1 - $utc_rd_secs2;
@@ -1657,30 +1744,52 @@ sub _subtract_overload {
 sub add {
     my $self = shift;
 
-    return $self->add_duration( $self->duration_class->new(@_) );
+    return $self->add_duration( $self->_duration_object_from_args(@_) );
 }
 
 sub subtract {
     my $self = shift;
-    my %p    = @_;
 
     my %eom;
-    $eom{end_of_month} = delete $p{end_of_month}
-        if exists $p{end_of_month};
+    if ( @_ % 2 == 0 ) {
+        my %p = @_;
 
-    my $dur = $self->duration_class->new(@_)->inverse(%eom);
+        $eom{end_of_month} = delete $p{end_of_month}
+            if exists $p{end_of_month};
+    }
+
+    my $dur = $self->_duration_object_from_args(@_)->inverse(%eom);
 
     return $self->add_duration($dur);
+}
+
+# Syntactic sugar for add and subtract: use a duration object if it's
+# supplied, otherwise build a new one from the arguments.
+
+sub _duration_object_from_args {
+    my $self = shift;
+
+    return $_[0]
+        if @_ == 1 && blessed( $_[0] ) && $_[0]->isa( $self->duration_class );
+
+    return $self->duration_class->new(@_);
 }
 
 sub subtract_duration { return $_[0]->add_duration( $_[1]->inverse ) }
 
 {
-    my @spec = ( { isa => 'DateTime::Duration' } );
+    my $validator = validation_for(
+        name             => '_check_add_duration_params',
+        name_is_optional => 1,
+        params           => [
+            { type => t('Duration') },
+        ],
+    );
 
+    ## no critic (Subroutines::ProhibitExcessComplexity)
     sub add_duration {
         my $self = shift;
-        my ($dur) = validate_pos( @_, @spec );
+        my ($dur) = $validator->(@_);
 
         # simple optimization
         return $self if $dur->is_zero;
@@ -1708,93 +1817,108 @@ sub subtract_duration { return $_[0]->add_duration( $_[1]->inverse ) }
 
         return $self if $self->is_infinite;
 
-        if ( $deltas{days} ) {
-            $self->{local_rd_days} += $deltas{days};
-
-            $self->{utc_year} += int( $deltas{days} / 365 ) + 1;
+        my %orig = %{$self};
+        try {
+            $self->_add_duration($dur);
         }
+        catch {
+            %{$self} = %orig;
+            die $_;
+        };
+    }
+}
 
-        if ( $deltas{months} ) {
+sub _add_duration {
+    my $self = shift;
+    my $dur  = shift;
 
-            # For preserve mode, if it is the last day of the month, make
-            # it the 0th day of the following month (which then will
-            # normalize back to the last day of the new month).
-            my ( $y, $m, $d ) = (
-                  $dur->is_preserve_mode
-                ? $self->_rd2ymd( $self->{local_rd_days} + 1 )
-                : $self->_rd2ymd( $self->{local_rd_days} )
-            );
+    my %deltas = $dur->deltas;
 
-            $d -= 1 if $dur->is_preserve_mode;
+    if ( $deltas{days} ) {
+        $self->{local_rd_days} += $deltas{days};
 
-            if ( !$dur->is_wrap_mode && $d > 28 ) {
+        $self->{utc_year} += int( $deltas{days} / 365 ) + 1;
+    }
 
-                # find the rd for the last day of our target month
-                $self->{local_rd_days}
-                    = $self->_ymd2rd( $y, $m + $deltas{months} + 1, 0 );
+    if ( $deltas{months} ) {
 
-                # what day of the month is it? (discard year and month)
-                my $last_day
-                    = ( $self->_rd2ymd( $self->{local_rd_days} ) )[2];
-
-                # if our original day was less than the last day,
-                # use that instead
-                $self->{local_rd_days} -= $last_day - $d if $last_day > $d;
-            }
-            else {
-                $self->{local_rd_days}
-                    = $self->_ymd2rd( $y, $m + $deltas{months}, $d );
-            }
-
-            $self->{utc_year} += int( $deltas{months} / 12 ) + 1;
-        }
-
-        if ( $deltas{days} || $deltas{months} ) {
-            $self->_calc_utc_rd;
-
-            $self->_handle_offset_modifier( $self->second );
-        }
-
-        if ( $deltas{minutes} ) {
-            $self->{utc_rd_secs} += $deltas{minutes} * 60;
-
-            # This intentionally ignores leap seconds
-            $self->_normalize_tai_seconds(
-                $self->{utc_rd_days},
-                $self->{utc_rd_secs}
-            );
-        }
-
-        if ( $deltas{seconds} || $deltas{nanoseconds} ) {
-            $self->{utc_rd_secs} += $deltas{seconds};
-
-            if ( $deltas{nanoseconds} ) {
-                $self->{rd_nanosecs} += $deltas{nanoseconds};
-                $self->_normalize_nanoseconds(
-                    $self->{utc_rd_secs},
-                    $self->{rd_nanosecs}
-                );
-            }
-
-            $self->_normalize_seconds;
-
-            # This might be some big number much bigger than 60, but
-            # that's ok (there are tests in 19leap_second.t to confirm
-            # that)
-            $self->_handle_offset_modifier(
-                $self->second + $deltas{seconds} );
-        }
-
-        my $new = ( ref $self )->from_object(
-            object => $self,
-            locale => $self->{locale},
-            ( $self->{formatter} ? ( formatter => $self->{formatter} ) : () ),
+        # For preserve mode, if it is the last day of the month, make
+        # it the 0th day of the following month (which then will
+        # normalize back to the last day of the new month).
+        my ( $y, $m, $d ) = (
+              $dur->is_preserve_mode
+            ? $self->_rd2ymd( $self->{local_rd_days} + 1 )
+            : $self->_rd2ymd( $self->{local_rd_days} )
         );
 
-        %$self = %$new;
+        $d -= 1 if $dur->is_preserve_mode;
 
-        return $self;
+        if ( !$dur->is_wrap_mode && $d > 28 ) {
+
+            # find the rd for the last day of our target month
+            $self->{local_rd_days}
+                = $self->_ymd2rd( $y, $m + $deltas{months} + 1, 0 );
+
+            # what day of the month is it? (discard year and month)
+            my $last_day
+                = ( $self->_rd2ymd( $self->{local_rd_days} ) )[2];
+
+            # if our original day was less than the last day,
+            # use that instead
+            $self->{local_rd_days} -= $last_day - $d if $last_day > $d;
+        }
+        else {
+            $self->{local_rd_days}
+                = $self->_ymd2rd( $y, $m + $deltas{months}, $d );
+        }
+
+        $self->{utc_year} += int( $deltas{months} / 12 ) + 1;
     }
+
+    if ( $deltas{days} || $deltas{months} ) {
+        $self->_calc_utc_rd;
+
+        $self->_handle_offset_modifier( $self->second );
+    }
+
+    if ( $deltas{minutes} ) {
+        $self->{utc_rd_secs} += $deltas{minutes} * 60;
+
+        # This intentionally ignores leap seconds
+        $self->_normalize_tai_seconds(
+            $self->{utc_rd_days},
+            $self->{utc_rd_secs}
+        );
+    }
+
+    if ( $deltas{seconds} || $deltas{nanoseconds} ) {
+        $self->{utc_rd_secs} += $deltas{seconds};
+
+        if ( $deltas{nanoseconds} ) {
+            $self->{rd_nanosecs} += $deltas{nanoseconds};
+            $self->_normalize_nanoseconds(
+                $self->{utc_rd_secs},
+                $self->{rd_nanosecs}
+            );
+        }
+
+        $self->_normalize_seconds;
+
+        # This might be some big number much bigger than 60, but
+        # that's ok (there are tests in 19leap_second.t to confirm
+        # that)
+        $self->_handle_offset_modifier( $self->second + $deltas{seconds} );
+    }
+
+    my $new = ( ref $self )->from_object(
+        object => $self,
+        locale => $self->{locale},
+        ( $self->{formatter} ? ( formatter => $self->{formatter} ) : () ),
+    );
+
+    %$self = %$new;
+
+    return $self;
 }
 
 sub _compare_overload {
@@ -1830,7 +1954,7 @@ sub compare_ignore_floating {
 }
 
 sub _compare {
-    my ( $class, $dt1, $dt2, $consistent ) = ref $_[0] ? ( undef, @_ ) : @_;
+    my ( undef, $dt1, $dt2, $consistent ) = ref $_[0] ? ( undef, @_ ) : @_;
 
     return undef unless defined $dt2;
 
@@ -1903,27 +2027,62 @@ sub _normalize_nanoseconds {
     }
 }
 
-# Many of the same parameters as new() but all of them are optional,
-# and there are no defaults.
-my $SetValidate = {
-    map {
-        my %copy = %{ $BasicValidate->{$_} };
-        delete $copy{default};
-        $copy{optional} = 1;
-        $_ => \%copy
+{
+    my $validator = validation_for(
+        name             => '_check_set_params',
+        name_is_optional => 1,
+        params           => {
+            year => {
+                type     => t('Year'),
+                optional => 1,
+            },
+            month => {
+                type     => t('Month'),
+                optional => 1,
+            },
+            day => {
+                type     => t('DayOfMonth'),
+                optional => 1,
+            },
+            hour => {
+                type     => t('Hour'),
+                optional => 1,
+            },
+            minute => {
+                type     => t('Minute'),
+                optional => 1,
+            },
+            second => {
+                type     => t('Second'),
+                optional => 1,
+            },
+            nanosecond => {
+                type     => t('Nanosecond'),
+                optional => 1,
+            },
+            locale => {
+                type     => t('Locale'),
+                optional => 1,
+            },
+        },
+    );
+
+    ## no critic (NamingConventions::ProhibitAmbiguousNames)
+    sub set {
+        my $self = shift;
+        my %p    = $validator->(@_);
+
+        if ( $p{locale} ) {
+            carp 'You passed a locale to the set() method.'
+                . ' You should use set_locale() instead, as using set() may alter the local time near a DST boundary.';
         }
-        keys %$BasicValidate
-};
 
-sub set {
-    my $self = shift;
-    my %p = validate( @_, $SetValidate );
+        my $new_dt = $self->_new_from_self(%p);
 
-    my $new_dt = $self->_new_from_self(%p);
+        %$self = %$new_dt;
 
-    %$self = %$new_dt;
-
-    return $self;
+        return $self;
+    }
 }
 
 sub set_year       { $_[0]->set( year       => $_[1] ) }
@@ -1938,23 +2097,42 @@ sub set_nanosecond { $_[0]->set( nanosecond => $_[1] ) }
 # DST change where the same local time occurs twice then passing it through
 # _new() can actually change the underlying UTC time, which is bad.
 
-sub set_locale {
-    my $self = shift;
+{
+    my $validator = validation_for(
+        name             => '_check_set_locale_params',
+        name_is_optional => 1,
+        params           => [
+            { type => t( 'Maybe', of => t('Locale') ) },
+        ],
+    );
 
-    my ($locale) = validate_pos( @_, $BasicValidate->{locale} );
+    sub set_locale {
+        my $self = shift;
+        my ($locale) = $validator->(@_);
 
-    $self->_set_locale($locale);
+        $self->_set_locale($locale);
 
-    return $self;
+        return $self;
+    }
 }
 
-sub set_formatter {
-    my $self = shift;
-    my ($formatter) = validate_pos( @_, $BasicValidate->{formatter} );
+{
+    my $validator = validation_for(
+        name             => '_check_set_formatter_params',
+        name_is_optional => 1,
+        params           => [
+            { type => t( 'Maybe', of => t('Formatter') ) },
+        ],
+    );
 
-    $self->{formatter} = $formatter;
+    sub set_formatter {
+        my $self = shift;
+        my ($formatter) = $validator->(@_);
 
-    return $self;
+        $self->{formatter} = $formatter;
+
+        return $self;
+    }
 }
 
 {
@@ -1966,13 +2144,23 @@ sub set_formatter {
         second     => 0,
         nanosecond => 0,
     );
-    my $re = join '|', 'year', 'week', 'local_week',
+
+    my $validator = validation_for(
+        name             => '_check_truncate_params',
+        name_is_optional => 1,
+        params           => {
+            to => { type => t('TruncationLevel') },
+        },
+    );
+
+    my $re = join '|', 'year', 'week', 'local_week', 'quarter',
         grep { $_ ne 'nanosecond' } keys %TruncateDefault;
     my $spec = { to => { regex => qr/^(?:$re)$/ } };
 
+    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     sub truncate {
         my $self = shift;
-        my %p = validate( @_, $spec );
+        my %p    = $validator->(@_);
 
         my %new;
         if ( $p{to} eq 'week' || $p{to} eq 'local_week' ) {
@@ -1997,6 +2185,17 @@ sub set_formatter {
                 $self->add( days => $day_diff );
                 die $_;
             };
+        }
+        elsif ( $p{to} eq 'quarter' ) {
+            %new = (
+                year       => $self->year,
+                month      => int( ( $self->month - 1 ) / 3 ) * 3 + 1,
+                day        => 1,
+                hour       => 0,
+                minute     => 0,
+                second     => 0,
+                nanosecond => 0,
+            );
         }
         else {
             my $truncate;
@@ -2062,15 +2261,14 @@ sub set_time_zone {
 }
 
 sub STORABLE_freeze {
-    my $self    = shift;
-    my $cloning = shift;
+    my $self = shift;
 
-    my $serialized = '';
+    my $serialized = q{};
     foreach my $key (
         qw( utc_rd_days
         utc_rd_secs
         rd_nanosecs )
-        ) {
+    ) {
         $serialized .= "$key:$self->{$key}|";
     }
 
@@ -2084,8 +2282,8 @@ sub STORABLE_freeze {
 }
 
 sub STORABLE_thaw {
-    my $self       = shift;
-    my $cloning    = shift;
+    my $self = shift;
+    shift;
     my $serialized = shift;
 
     my %serialized = map { split /:/ } split /\|/, $serialized;
@@ -2099,11 +2297,7 @@ sub STORABLE_thaw {
     else {
         $tz = DateTime::TimeZone->new( name => delete $serialized{tz} );
 
-        $locale = DateTime::Locale->load(
-            exists $serialized{language}
-            ? delete $serialized{language}
-            : delete $serialized{locale}
-        );
+        $locale = DateTime::Locale->load( delete $serialized{locale} );
     }
 
     delete $serialized{version};
@@ -2130,6 +2324,7 @@ sub STORABLE_thaw {
     return $self;
 }
 
+## no critic (Modules::ProhibitMultiplePackages)
 package    # hide from PAUSE
     DateTime::_Thawed;
 
@@ -2145,13 +2340,15 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 DateTime - A date and time object for Perl
 
 =head1 VERSION
 
-version 1.20
+version 1.49
 
 =head1 SYNOPSIS
 
@@ -2249,14 +2446,12 @@ from how dates are often written using "BCE/CE" or "BC/AD".
 For infinite datetimes, please see the
 L<DateTime::Infinite|DateTime::Infinite> module.
 
-=encoding UTF-8
-
 =head1 USAGE
 
 =head2 0-based Versus 1-based Numbers
 
-The DateTime.pm module follows a simple consistent logic for
-determining whether or not a given number is 0-based or 1-based.
+The DateTime.pm module follows a simple logic for determining whether or not a
+given number is 0-based or 1-based.
 
 Month, day of month, day of week, and day of year are 1-based. Any
 method that is 1-based also has an equivalent 0-based method ending in
@@ -2286,7 +2481,7 @@ or C<epoch()>, will never die.
 
 All the object methods which return names or abbreviations return data based
 on a locale. This is done by setting the locale when constructing a DateTime
-object. If this is not set, then "en_US" is used.
+object. If this is not set, then "en-US" is used.
 
 =head2 Floating DateTimes
 
@@ -2335,6 +2530,24 @@ very far in the future (thousands of years). The current
 implementation of C<DateTime::TimeZone> will use a huge amount of
 memory calculating all the DST changes from now until the future
 date. Use UTC or the floating time zone and you will be safe.
+
+=head2 Globally Setting a Default Time Zone
+
+B<Warning: This is very dangerous. Do this at your own risk!>
+
+By default, C<DateTime> uses either the floating time zone or UTC for newly
+created objects, depending on the constructor.
+
+You can force C<DateTime> to use a different time zone by setting the
+C<PERL_DATETIME_DEFAULT_TZ> environment variable.
+
+As noted above, this is very dangerous, as it affects all code that creates a
+C<DateTime> object, including modules from CPAN. If those modules expect the
+normal default, then setting this can cause confusing breakage or subtly
+broken data. Before setting this variable, you are strongly encouraged to
+audit your CPAN dependencies to see how they use C<DateTime>. Try running the
+test suite for each dependency with this environment variable set before using
+this in production.
 
 =head2 Upper and Lower Bounds
 
@@ -2433,16 +2646,15 @@ All of the parameters are optional except for "year". The "month" and
 "day" parameters both default to 1, while the "hour", "minute",
 "second", and "nanosecond" parameters all default to 0.
 
-The "locale" parameter should be a string matching one of the valid
-locales, or a C<DateTime::Locale> object. See the
-L<DateTime::Locale|DateTime::Locale> documentation for details.
+The "locale" parameter should be a string containing a locale code, like
+"en-US" or "zh-Hant-TW", or an object returned by C<< DateTime::Locale->load
+>>. See the L<DateTime::Locale|DateTime::Locale> documentation for details.
 
-The time_zone parameter can be either a scalar or a
-C<DateTime::TimeZone> object. A string will simply be passed to the
-C<< DateTime::TimeZone->new >> method as its "name" parameter. This
-string may be an Olson DB time zone name ("America/Chicago"), an
-offset string ("+0630"), or the words "floating" or "local". See the
-C<DateTime::TimeZone> documentation for more details.
+The "time_zone" parameter can be either a string or a C<DateTime::TimeZone>
+object. A string will simply be passed to the C<< DateTime::TimeZone->new >>
+method as its "name" parameter. This string may be an Olson DB time zone name
+("America/Chicago"), an offset string ("+0630"), or the words "floating" or
+"local". See the C<DateTime::TimeZone> documentation for more details.
 
 The default time zone is "floating".
 
@@ -2514,11 +2726,8 @@ This class method can be used to construct a new DateTime object from
 an epoch time instead of components. Just as with the C<new()>
 method, it accepts "time_zone", "locale", and "formatter" parameters.
 
-If the epoch value is not an integer, the part after the decimal will
-be converted to nanoseconds. This is done in order to be compatible
-with C<Time::HiRes>. If the floating portion extends past 9 decimal
-places, it will be truncated to nine, so that 1.1234567891 will become
-1 second and 123,456,789 nanoseconds.
+If the epoch value is a floating-point value, it will be rounded to
+nearest microsecond.
 
 By default, the returned object will be in the UTC time zone.
 
@@ -2774,19 +2983,59 @@ If no separator is specified, a colon (:) is used by default.
 
 Also available as C<< $dt->time() >>.
 
-=head3 $dt->datetime()
+=head3 $dt->datetime( $optional_separator )
 
 This method is equivalent to:
 
   $dt->ymd('-') . 'T' . $dt->hms(':')
 
+The C<$optional_separator> parameter allows you to override the separator
+between the date and time, for e.g. C<< $dt->datetime(q{ }) >>.
+
 This method is also available as C<< $dt->iso8601() >>, but it's not really a
-very good ISO8601 format, as it lacks a time zone.
+very good ISO8601 format, as it lacks a time zone.  If called as
+C<< $dt->iso8601() >> you cannot change the separator, as ISO8601 specifies
+that "T" must be used to separate them.
+
+=head3 $dt->stringify()
+
+This method returns a stringified version of the object. It is how
+stringification overloading is implemented. If the object has a formatter,
+then its C<format_datetime()> method is used to produce a string. Otherwise,
+this method calls C<< $dt->iso8601() >> to produce a string. See L<Formatters
+And Stringification> for details.
 
 =head3 $dt->is_leap_year()
 
-This method returns a true or false indicating whether or not the
+This method returns a true or false value indicating whether or not the
 datetime object is in a leap year.
+
+=head3 $dt->is_last_day_of_month()
+
+This method returns a true or false value indicating whether or not the
+datetime object is the last day of the month.
+
+=head3 $dt->is_last_day_of_quarter()
+
+This method returns a true or false value indicating whether or not the
+datetime object is the last day of the quarter.
+
+=head3 $dt->is_last_day_of_year()
+
+This method returns a true or false value indicating whether or not the
+datetime object is the last day of the year.
+
+=head3 $dt->month_length()
+
+This method returns the number of days in the current month.
+
+=head3 $dt->quarter_length()
+
+This method returns the number of days in the current quarter.
+
+=head3 $dt->year_length()
+
+This method returns the number of days in the current year.
 
 =head3 $dt->week()
 
@@ -2880,21 +3129,14 @@ text.
 
 =head3 $dt->epoch()
 
-Return the UTC epoch value for the datetime object. Internally, this
-is implemented using C<Time::Local>, which uses the Unix epoch even on
-machines with a different epoch (such as MacOS). Datetimes before the
-start of the epoch will be returned as a negative number.
+Return the UTC epoch value for the datetime object. Datetimes before the start
+of the epoch will be returned as a negative number.
 
 The return value from this method is always an integer.
 
 Since the epoch does not account for leap seconds, the epoch time for
 1972-12-31T23:59:60 (UTC) is exactly the same as that for
 1973-01-01T00:00:00.
-
-This module uses C<Time::Local> to calculate the epoch, which may or
-may not handle epochs before 1904 or after 2038 (depending on the size
-of your system's integers, and whether or not Perl was compiled with
-64-bit int support).
 
 =head3 $dt->hires_epoch()
 
@@ -2968,13 +3210,12 @@ possible. For example:
 
 =head3 $dt->set( .. )
 
-This method can be used to change the local components of a date time,
-or its locale. This method accepts any parameter allowed by the
-C<new()> method except for "time_zone". Time zones may be set using
-the C<set_time_zone()> method.
+This method can be used to change the local components of a date time. This
+method accepts any parameter allowed by the C<new()> method except for
+"locale" or "time_zone". Use C<set_locale()> and C<set_time_zone()> for those
+instead.
 
-This method performs parameters validation just as is done in the
-C<new()> method.
+This method performs parameter validation just like the C<new()> method.
 
 B<Do not use this method to do date math. Use the C<add()> and C<subtract()>
 methods instead.>
@@ -3000,8 +3241,6 @@ constructor:
 
 =item * $dt->set_nanosecond()
 
-=item * $dt->set_locale()
-
 =back
 
 These are shortcuts to calling C<set()> with a single key. They all
@@ -3011,14 +3250,21 @@ take a single parameter.
 
 This method allows you to reset some of the local time components in the
 object to their "zero" values. The "to" parameter is used to specify which
-values to truncate, and it may be one of "year", "month", "week", "local_week"
-"day", "hour", "minute", or "second". For example, if "month" is specified,
-then the local day becomes 1, and the hour, minute, and second all become 0.
+values to truncate, and it may be one of "year", "quarter", "month", "week",
+"local_week", "day", "hour", "minute", or "second".
+
+For example, if "month" is specified, then the local day becomes 1, and the
+hour, minute, and second all become 0.
 
 If "week" is given, then the datetime is set to the Monday of the week in
 which it occurs, and the time components are all set to 0. If you truncate to
 "local_week", then the first day of the week is locale-dependent. For example,
-in the C<en_US> locale, the first day of the week is Sunday.
+in the C<en-US> locale, the first day of the week is Sunday.
+
+=head3 $dt->set_locale( $locale )
+
+Sets the object's locale. You can provide either a locale code like "en-US" or
+an object returned by C<< DateTime::Locale->load >>.
 
 =head3 $dt->set_time_zone( $tz )
 
@@ -3082,11 +3328,15 @@ C<DateTime.pm> can provide a different value.
 This method adds a C<DateTime::Duration> to the current datetime. See
 the L<DateTime::Duration|DateTime::Duration> docs for more details.
 
-=head3 $dt->add( DateTime::Duration->new parameters )
+=head3 $dt->add( parameters for DateTime::Duration )
 
 This method is syntactic sugar around the C<add_duration()> method. It
 simply creates a new C<DateTime::Duration> object using the parameters
 given, and then calls the C<add_duration()> method.
+
+=head3 $dt->add( $duration_object )
+
+A synonym of C<< $dt->add_duration( $duration_object ) >>.
 
 =head3 $dt->subtract_duration( $duration_object )
 
@@ -3098,6 +3348,10 @@ C<add_duration> method.
 
 Like C<add()>, this is syntactic sugar for the C<subtract_duration()>
 method.
+
+=head3 $dt->subtract( $duration_object )
+
+A synonym of C<< $dt->subtract_duration( $duration_object ) >>.
 
 =head3 $dt->subtract_datetime( $datetime )
 
@@ -3158,7 +3412,7 @@ doing this math based on the value returned by C<< $dt->epoch() >>.
 =head3 DateTime->DefaultLocale( $locale )
 
 This can be used to specify the default locale to be used when
-creating DateTime objects. If unset, then "en_US" is used.
+creating DateTime objects. If unset, then "en-US" is used.
 
 =head3 DateTime->compare( $dt1, $dt2 ), DateTime->compare_ignore_floating( $dt1, $dt2 )
 
@@ -3209,7 +3463,7 @@ override C<DateTime::_core_time()>:
     no warnings 'redefine';
     local *DateTime::_core_time = sub { return 42 };
 
-DateTime is guaranteed to core this subroutine to get the current C<time()>
+DateTime is guaranteed to call this subroutine to get the current C<time()>
 value. You can also override the C<_core_time()> sub in a subclass of DateTime
 and use that.
 
@@ -3279,7 +3533,7 @@ corner cases involving subtraction of two datetimes across a DST
 change.
 
 If you can always use the floating or UTC time zones, you can skip
-ahead to L<Leap Seconds and Date Math|Leap Seconds and Date Math>
+ahead to L<Leap Seconds and Date Math>
 
 =item * date vs datetime math
 
@@ -3302,6 +3556,13 @@ Note that using C<delta_days> ensures that this formula always works,
 regardless of the timezone of the objects involved, as does using
 C<subtract_datetime_absolute()>. Other methods of subtraction are not
 always reversible.
+
+=item * never do math on two objects where only one is in the floating time zone
+
+The date math code accounts for leap seconds whenever the C<DateTime> object
+is not in the floating time zone. If you try to do math where one object is in
+the floating zone and the other isn't, the results will be confusing and
+wrong.
 
 =back
 
@@ -3989,6 +4250,47 @@ The time zone long name.
 
 =back
 
+=head3 CLDR "Available Formats"
+
+The CLDR data includes pre-defined formats for various patterns such as "month
+and day" or "time of day". Using these formats lets you render information
+about a datetime in the most natural way for users from a given locale.
+
+These formats are indexed by a key that is itself a CLDR pattern. When you
+look these up, you get back a different CLDR pattern suitable for the locale.
+
+Let's look at some example We'll use C<2008-02-05T18:30:30> as our example
+datetime value, and see how this is rendered for the C<en-US> and C<fr-FR>
+locales.
+
+=over 4
+
+=item * C<MMMd>
+
+The abbreviated month and day as number. For C<en-US>, we get the pattern
+C<MMM d>, which renders as C<Feb 5>. For C<fr-FR>, we get the pattern
+C<d MMM>, which renders as C<5 févr.>.
+
+=item * C<yQQQ>
+
+The year and abbreviated quarter of year. For C<en-US>, we get the pattern
+C<QQQ y>, which renders as C<Q1 2008>. For C<fr-FR>, we get the same pattern,
+C<QQQ y>, which renders as C<T1 2008>.
+
+=item * C<hm>
+
+The 12-hour time of day without seconds.  For C<en-US>, we get the pattern
+C<h:mm a>, which renders as C<6:30 PM>. For C<fr-FR>, we get the exact same
+pattern and rendering.
+
+=back
+
+The available formats for each locale are documented in the POD for that
+locale. To get back the format, you use the C<< $locale->format_for >>
+method. For example:
+
+    say $dt->format_cldr( $dt->locale->format_for('MMMd') );
+
 =head2 strftime Patterns
 
 The following patterns are allowed in the format string given to the
@@ -4262,36 +4564,6 @@ platform/compiler/phase of moon dependent.
 If you don't plan to use infinite datetimes you can probably ignore
 this. This will be fixed (perhaps) in future versions.
 
-=head1 SUPPORT
-
-Support for this module is provided via the datetime@perl.org email list. See
-http://datetime.perl.org/wiki/datetime/page/Mailing_List for details.
-
-Please submit bugs to the CPAN RT system at
-http://rt.cpan.org/NoAuth/Bugs.html?Dist=DateTime or via email at
-bug-datetime@rt.cpan.org.
-
-=head1 DONATIONS
-
-If you'd like to thank me for the work I've done on this module,
-please consider making a "donation" to me via PayPal. I spend a lot of
-free time creating free software, and would appreciate any support
-you'd care to offer.
-
-Please note that B<I am not suggesting that you must do this> in order
-for me to continue working on this particular software. I will
-continue to do so, inasmuch as I have in the past, for as long as it
-interests me.
-
-Similarly, a donation made in this way will probably not make me work
-on this software much more, unless I get so many donations that I can
-consider working on free software full time, which seems unlikely at
-best.
-
-To donate, log into PayPal and send money to autarch@urth.org or use
-the button on this page:
-L<http://www.urth.org/~autarch/fs-donation.html>
-
 =head1 SEE ALSO
 
 L<A Date with
@@ -4302,13 +4574,43 @@ L<datetime@perl.org mailing list|http://lists.perl.org/list/datetime.html>
 
 L<http://datetime.perl.org/>
 
+=head1 SUPPORT
+
+Bugs may be submitted at L<https://github.com/houseabsolute/DateTime.pm/issues>.
+
+There is a mailing list available for users of this distribution,
+L<mailto:datetime@perl.org>.
+
+I am also usually active on IRC as 'autarch' on C<irc://irc.perl.org>.
+
+=head1 SOURCE
+
+The source code repository for DateTime can be found at L<https://github.com/houseabsolute/DateTime.pm>.
+
+=head1 DONATIONS
+
+If you'd like to thank me for the work I've done on this module, please
+consider making a "donation" to me via PayPal. I spend a lot of free time
+creating free software, and would appreciate any support you'd care to offer.
+
+Please note that B<I am not suggesting that you must do this> in order for me
+to continue working on this particular software. I will continue to do so,
+inasmuch as I have in the past, for as long as it interests me.
+
+Similarly, a donation made in this way will probably not make me work on this
+software much more, unless I get so many donations that I can consider working
+on free software full time (let's all have a chuckle at that together).
+
+To donate, log into PayPal and send money to autarch@urth.org, or use the
+button at L<http://www.urth.org/~autarch/fs-donation.html>.
+
 =head1 AUTHOR
 
 Dave Rolsky <autarch@urth.org>
 
 =head1 CONTRIBUTORS
 
-=for stopwords Ben Bennett Christian Hansen Daisuke Maki David E. Wheeler Doug Bell Flávio Soibelmann Glock Gregory Oschwald Iain Truskett Jason McIntosh Joshua Hoblitt Ricardo Signes Richard Bowen Ron Hill
+=for stopwords Ben Bennett Christian Hansen Daisuke Maki Dan Book Stewart David E. Wheeler Precious Doug Bell Flávio Soibelmann Glock Gianni Ceccarelli Gregory Oschwald Hauke D Iain Truskett Jason McIntosh Joshua Hoblitt Karen Etheridge Michael Conrad R. Davis M Somerville Nick Tonkin Olaf Alders Ovid Paul Howarth Philippe Bruhat (BooK) Ricardo Signes Richard Bowen Ron Hill Sam Kington viviparous
 
 =over 4
 
@@ -4326,7 +4628,19 @@ Daisuke Maki <dmaki@cpan.org>
 
 =item *
 
+Dan Book <grinnz@gmail.com>
+
+=item *
+
+Dan Stewart <danielandrewstewart@gmail.com>
+
+=item *
+
 David E. Wheeler <david@justatheory.com>
+
+=item *
+
+David Precious <davidp@preshweb.co.uk>
 
 =item *
 
@@ -4338,7 +4652,15 @@ Flávio Soibelmann Glock <fglock@gmail.com>
 
 =item *
 
+Gianni Ceccarelli <gianni.ceccarelli@broadbean.com>
+
+=item *
+
 Gregory Oschwald <oschwald@gmail.com>
+
+=item *
+
+Hauke D <haukex@zero-g.net>
 
 =item *
 
@@ -4354,6 +4676,42 @@ Joshua Hoblitt <jhoblitt@cpan.org>
 
 =item *
 
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Michael Conrad <mike@nrdvana.net>
+
+=item *
+
+Michael R. Davis <mrdvt92@users.noreply.github.com>
+
+=item *
+
+M Somerville <dracos@users.noreply.github.com>
+
+=item *
+
+Nick Tonkin <1nickt@users.noreply.github.com>
+
+=item *
+
+Olaf Alders <olaf@wundersolutions.com>
+
+=item *
+
+Ovid <curtis_ovid_poe@yahoo.com>
+
+=item *
+
+Paul Howarth <paul@city-fan.org>
+
+=item *
+
+Philippe Bruhat (BooK) <book@cpan.org>
+
+=item *
+
 Ricardo Signes <rjbs@cpan.org>
 
 =item *
@@ -4364,14 +4722,25 @@ Richard Bowen <bowen@cpan.org>
 
 Ron Hill <rkhill@cpan.org>
 
+=item *
+
+Sam Kington <github@illuminated.co.uk>
+
+=item *
+
+viviparous <viviparous@prc>
+
 =back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is Copyright (c) 2015 by Dave Rolsky.
+This software is Copyright (c) 2003 - 2018 by Dave Rolsky.
 
 This is free software, licensed under:
 
   The Artistic License 2.0 (GPL Compatible)
+
+The full text of the license can be found in the
+F<LICENSE> file included with this distribution.
 
 =cut

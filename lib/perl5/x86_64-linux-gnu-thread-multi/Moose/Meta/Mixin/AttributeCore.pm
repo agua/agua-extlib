@@ -1,5 +1,5 @@
 package Moose::Meta::Mixin::AttributeCore;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -36,7 +36,8 @@ __PACKAGE__->meta->add_attribute(
 
 __PACKAGE__->meta->add_attribute(
     'lazy' => (
-        reader => 'is_lazy', Class::MOP::_definition_context(),
+        reader => 'is_lazy',
+        Class::MOP::_definition_context(),
     )
 );
 
@@ -117,7 +118,7 @@ Moose::Meta::Mixin::AttributeCore - Core attributes shared by attribute metaclas
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -176,7 +177,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

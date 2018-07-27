@@ -1,5 +1,5 @@
 package Moose::Exception::RequiredMethodsImportedByClass;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use Moose;
 extends 'Moose::Exception';
@@ -42,4 +42,5 @@ sub _build_message {
         . " => \\&$method)";
 }
 
+__PACKAGE__->meta->make_immutable;
 1;

@@ -586,7 +586,7 @@ our %SSL_METHODS = (
    tlsv1   => \&Net::SSLeay::CTX_tlsv1_new,
 );
 
-# Add TLSv1_1 and TLSv1_2 if Net::SSLEay and openssl allow them
+# Add TLSv1_1 and TLSv1_2 if Net::SSLeay and openssl allow them
 if (_check_tls_gt_1) {
    $SSL_METHODS{tlsv1_1} = \&Net::SSLeay::CTX_tlsv1_1_new;
    $SSL_METHODS{tlsv1_2} = \&Net::SSLeay::CTX_tlsv1_2_new;
@@ -827,6 +827,7 @@ sub verify {
 #=cut
 
 #our %REF_MAP;
+our $TLS_SNI_WARNED;
 
 sub _get_session($$;$$) {
    my ($self, $mode, $ref, $cn) = @_;
@@ -842,6 +843,15 @@ sub _get_session($$;$$) {
 
    } elsif ($mode eq "connect") {
       $session = Net::SSLeay::new ($self->{ctx});
+
+      if (defined &Net::SSLeay::set_tlsext_host_name) {
+         Net::SSLeay::set_tlsext_host_name ($session, $cn)
+            if length $cn;
+      } else {
+         AE::log 6 => "TLS SNI not supported by your Net::SSLeay module, connecting without"
+            unless $TLS_SNI_WARNED++;
+      }
+
       Net::SSLeay::set_connect_state ($session);
 
       Net::SSLeay::set_options ($session, eval { Net::SSLeay::OP_NO_TICKET () })

@@ -1,5 +1,5 @@
 package Moose::Exception::CouldNotParseType;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use Moose;
 extends 'Moose::Exception';
@@ -26,4 +26,5 @@ sub _build_message {
         . " and str-length=$length)";
 }
 
+__PACKAGE__->meta->make_immutable;
 1;

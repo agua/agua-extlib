@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 package Moose::Meta::Attribute;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use B ();
 use Scalar::Util 'blessed';
@@ -25,6 +25,12 @@ Class::MOP::MiniTrait::apply(__PACKAGE__, 'Moose::Meta::Object::Trait');
 __PACKAGE__->meta->add_attribute('traits' => (
     reader    => 'applied_traits',
     predicate => 'has_applied_traits',
+    Class::MOP::_definition_context(),
+));
+
+__PACKAGE__->meta->add_attribute('role_attribute' => (
+    reader    => 'role_attribute',
+    predicate => 'has_role_attribute',
     Class::MOP::_definition_context(),
 ));
 
@@ -285,11 +291,13 @@ sub _process_is_option {
         $options->{reader} ||= $name;
     }
     elsif ( $options->{is} eq 'rw' ) {
-        if ( $options->{writer} ) {
-            $options->{reader} ||= $name;
-        }
-        else {
-            $options->{accessor} ||= $name;
+        if ( ! $options->{accessor} ) {
+            if ( $options->{writer}) {
+                $options->{reader} ||= $name;
+            }
+            else {
+                $options->{accessor} = $name;
+            }
         }
     }
     elsif ( $options->{is} eq 'bare' ) {
@@ -324,21 +332,12 @@ sub _process_isa_option {
 
     # allow for anon-subtypes here ...
     #
-    # Checking for Specio explicitly is completely revolting. At some point
-    # this needs to be refactored so that Moose core defines a standard type
-    # API that all types must implement. Unfortunately, the current core API
-    # is _not_ the right API, so we probably need to A) come up with the new
-    # API (Specio is a good start); B) refactor the core types to implement
-    # that API; C) do duck type checking on type objects.
+    # There are a _lot_ of methods that we expect from TC objects, but
+    # checking for a specific parent class via ->isa is gross, so we'll check
+    # for at least one method.
     if ( blessed( $options->{isa} )
-        && $options->{isa}->isa('Moose::Meta::TypeConstraint') ) {
-        $options->{type_constraint} = $options->{isa};
-    }
-    elsif (
-        blessed( $options->{isa} )
-        && $options->{isa}->can('does')
-        && $options->{isa}->does('Specio::Constraint::Role::Interface')
-        ) {
+        && $options->{isa}->can('has_coercion') ) {
+
         $options->{type_constraint} = $options->{isa};
     }
     else {
@@ -357,7 +356,8 @@ sub _process_does_option {
 
     # allow for anon-subtypes here ...
     if ( blessed( $options->{does} )
-        && $options->{does}->isa('Moose::Meta::TypeConstraint') ) {
+        && $options->{does}->can('has_coercion') ) {
+
         $options->{type_constraint} = $options->{does};
     }
     else {
@@ -489,11 +489,16 @@ sub initialize_instance_slot {
         return if $self->is_lazy;
         # and die if it's required and doesn't have a default value
         my $class_name = blessed( $instance );
-        throw_exception(AttributeIsRequired => attribute_name => $self->name,
-                                               class_name     => $class_name,
-                                               params         => $params,
-                       )
-            if $self->is_required && !$self->has_default && !$self->has_builder;
+        throw_exception(
+            'AttributeIsRequired',
+            attribute_name => $self->name,
+            ( defined $init_arg ? ( attribute_init_arg => $init_arg ) : () ),
+            class_name => $class_name,
+            params     => $params,
+            )
+            if $self->is_required
+            && !$self->has_default
+            && !$self->has_builder;
 
         # if nothing was in the %params, we can use the
         # attribute's default value (if it has one)
@@ -546,13 +551,18 @@ sub set_value {
     my ($self, $instance, @args) = @_;
     my $value = $args[0];
 
-    my $attr_name = quotemeta($self->name);
-
     my $class_name = blessed( $instance );
     if ($self->is_required and not @args) {
-        throw_exception( AttributeIsRequired => attribute_name => $self->name,
-                                                class_name     => $class_name,
-                       );
+        throw_exception(
+            'AttributeIsRequired',
+            attribute_name => $self->name,
+            (
+                defined $self->init_arg
+                ? ( attribute_init_arg => $self->init_arg )
+                : ()
+            ),
+            class_name => $class_name,
+        );
     }
 
     $value = $self->_coerce_and_verify( $value, $instance );
@@ -628,16 +638,25 @@ sub _inline_check_required {
 
     return unless $self->is_required;
 
-    my $attr_name = quotemeta($self->name);
+    my $throw_params = sprintf( <<'EOF', quotemeta( $self->name ) );
+attribute_name => "%s",
+class_name     => $class_name,
+EOF
+    $throw_params .= sprintf(
+        'attribute_init_arg => "%s",',
+        quotemeta( $self->init_arg )
+    ) if defined $self->init_arg;
 
-    return (
-        'if (@_ < 2) {',
-            $self->_inline_throw_exception( AttributeIsRequired =>
-                                            'attribute_name      => "'.$attr_name.'",'.
-                                            'class_name          => $class_name'
-            ) . ';',
-        '}',
+    my $throw = $self->_inline_throw_exception(
+        'AttributeIsRequired',
+        $throw_params
     );
+
+    return sprintf( <<'EOF', $throw );
+if ( @_ < 2 ) {
+    %s;
+}
+EOF
 }
 
 sub _inline_tc_code {
@@ -1021,15 +1040,59 @@ sub _process_accessors {
     my $method = $self->associated_class->get_method($accessor);
 
     if (   $method
-        && $method->isa('Class::MOP::Method::Accessor')
-        && $method->associated_attribute->name ne $self->name ) {
+        && $method->isa('Class::MOP::Method::Accessor') ) {
 
-        my $other_attr_name = $method->associated_attribute->name;
-        my $name            = $self->name;
+        # This is a special case that is very unlikely to occur outside of the
+        # Moose bootstrapping process. We do not want to warn if the method
+        # we're about to replace is for this same attribute, _and_ we're
+        # replacing a non-inline method with an inlined version.
+        #
+        # This would never occur in normal user code because Moose inlines all
+        # accessors. However, Moose metaclasses are instances of
+        # Class::MOP::Class, which _does not_ inline accessors by
+        # default. However, in Class::MOP & Moose.pm, we iterate over all of
+        # our internal metaclasses and make them immutable after they're fully
+        # defined. This ends up replacing the attribute accessors.
+        unless ( $method->associated_attribute->name eq $self->name
+            && ( $generate_as_inline_methods && !$method->is_inline ) ) {
 
-        Carp::cluck(
-            "You are overwriting an accessor ($accessor) for the $other_attr_name attribute"
-                . " with a new accessor method for the $name attribute" );
+            my $other_attr = $method->associated_attribute;
+
+            my $msg = sprintf(
+                'You are overwriting a %s (%s) for the %s attribute',
+                $method->accessor_type,
+                $accessor,
+                $other_attr->name,
+            );
+
+            if ( my $method_context = $method->definition_context ) {
+                $msg .= sprintf(
+                    ' (defined at %s line %s)',
+                    $method_context->{file},
+                    $method_context->{line},
+                    )
+                    if defined $method_context->{file}
+                    && $method_context->{line};
+            }
+
+            $msg .= sprintf(
+                ' with a new %s method for the %s attribute',
+                $type,
+                $self->name,
+            );
+
+            if ( my $self_context = $self->definition_context ) {
+                $msg .= sprintf(
+                    ' (defined at %s line %s)',
+                    $self_context->{file},
+                    $self_context->{line},
+                    )
+                    if defined $self_context->{file}
+                    && $self_context->{line};
+            }
+
+            Carp::cluck($msg);
+        }
     }
 
     if (
@@ -1070,7 +1133,7 @@ sub install_delegation {
     # Here we canonicalize the 'handles' option
     # this will sort out any details and always
     # return an hash of methods which we want
-    # to delagate to, see that method for details
+    # to delegate to, see that method for details
     my %handles = $self->_canonicalize_handles;
 
     # install the delegation ...
@@ -1272,8 +1335,8 @@ sub verify_against_type_constraint {
                           );
 }
 
-package Moose::Meta::Attribute::Custom::Moose;
-our $VERSION = '2.1403';
+package  # hide from PAUSE
+    Moose::Meta::Attribute::Custom::Moose;
 
 sub register_implementation { 'Moose::Meta::Attribute' }
 1;
@@ -1292,7 +1355,7 @@ Moose::Meta::Attribute - The Moose attribute metaclass
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -1453,6 +1516,10 @@ becomes:
 Note the doubled underscore in the builder name. Internally, Moose
 simply prepends the attribute name with "_build_" to come up with the
 builder name.
+
+=item * role_attribute => $role_attribute
+
+If provided, this should be a L<Moose::Meta::Role::Attribute> object.
 
 =back
 
@@ -1663,6 +1730,15 @@ the constructor, if any.
 
 Returns true if this attribute has any documentation.
 
+=item B<< $attr->role_attribute >>
+
+Returns the L<Moose::Meta::Role::Attribute> object from which this attribute
+was created, if any. This may return C<undef>.
+
+=item B<< $attr->has_role_attribute >>
+
+Returns true if this attribute has an associated role attribute.
+
 =item B<< $attr->applied_traits >>
 
 This returns an array reference of all the traits which were applied
@@ -1726,7 +1802,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

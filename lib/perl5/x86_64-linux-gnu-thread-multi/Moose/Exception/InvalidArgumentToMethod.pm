@@ -1,5 +1,5 @@
 package Moose::Exception::InvalidArgumentToMethod;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use Moose;
 extends 'Moose::Exception';
@@ -41,4 +41,5 @@ sub _build_message {
     }
 }
 
+__PACKAGE__->meta->make_immutable;
 1;

@@ -4,7 +4,7 @@
       "Curtis \"Ovid\" Poe <ovid@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.029, CPAN::Meta::Converter version 2.143240, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla version 5.029, CPAN::Meta::Converter version 2.143240, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
@@ -1031,5 +1031,5 @@
       "Olivier Mengué <dolmen@cpan.org>"
    ],
    "x_permissions_from_module" : "aliased",
-   "x_serialization_backend" : "JSON::PP version 2.27202"
+   "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }

@@ -1,13 +1,12 @@
 package Moose::Meta::Class;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
 use Class::MOP;
 use Data::OptList;
-use List::Util 1.33 qw( any first );
-use List::MoreUtils qw( uniq first_index );
+use List::Util 1.33 qw( any );
 use Scalar::Util 'blessed';
 
 use Moose::Meta::Method::Overridden;
@@ -107,7 +106,9 @@ sub _anon_cache_key {
 
     my $roles = Data::OptList::mkopt(($options{roles} || []), {
         moniker  => 'role',
-        val_test => sub { ref($_[0]) eq 'HASH' },
+        name_test => sub {
+            ! ref $_[0] or blessed($_[0]) && $_[0]->isa('Moose::Meta::Role')
+        },
     });
 
     my @role_keys;
@@ -376,16 +377,21 @@ sub _inline_check_required_attr {
     return unless $attr->can('is_required') && $attr->is_required;
     return if $attr->has_default || $attr->has_builder;
 
-    return (
-        'if (!exists $params->{\'' . $attr->init_arg . '\'}) {',
-            $self->_inline_throw_exception(
-                AttributeIsRequired =>
-                'params         => $params, '.
-                'class_name     => $class_name, '.
-                'attribute_name => "'.quotemeta($attr->name).'"'
-            ).';',
-        '}',
-    );
+    my $throw = $self->_inline_throw_exception(
+        'AttributeIsRequired',
+        sprintf(
+            <<'EOF', quotemeta( $attr->name ), quotemeta( $attr->init_arg ) ), );
+params             => $params,
+class_name         => $class_name,
+attribute_name     => "%s",
+attribute_init_arg => "%s",
+EOF
+
+    return sprintf( <<'EOF', quotemeta( $attr->init_arg ), $throw )
+if ( !exists $params->{"%s"} ) {
+    %s;
+}
+EOF
 }
 
 # XXX: these two are duplicated from cmop, because we have to pass the tc stuff
@@ -481,6 +487,8 @@ sub _inline_BUILDALL {
     my $self = shift;
 
     my @methods = reverse $self->find_all_methods_by_name('BUILD');
+    return () unless @methods;
+
     my @BUILD_calls;
 
     foreach my $method (@methods) {
@@ -488,7 +496,11 @@ sub _inline_BUILDALL {
             '$instance->' . $method->{class} . '::BUILD($params);';
     }
 
-    return @BUILD_calls;
+    return (
+        'if (!$params->{__no_BUILD__}) {',
+        @BUILD_calls,
+        '}',
+    );
 }
 
 sub _eval_environment {
@@ -802,7 +814,7 @@ Moose::Meta::Class - The Moose metaclass
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -994,7 +1006,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

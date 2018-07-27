@@ -1,5 +1,5 @@
 package Moose::Object;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -39,7 +39,7 @@ sub BUILDARGS {
         return { @_, undef };
     }
     else {
-        return {@_};
+        return { @_ };
     }
 }
 
@@ -49,6 +49,7 @@ sub BUILDALL {
     # extra meta level calls
     return unless $_[0]->can('BUILD');
     my ($self, $params) = @_;
+    return if $params->{__no_BUILD__};
     foreach my $method (reverse Class::MOP::class_of($self)->find_all_methods_by_name('BUILD')) {
         $method->{code}->execute($self, $params);
     }
@@ -147,7 +148,7 @@ Moose::Object - The base object for Moose
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -199,8 +200,10 @@ C<UNIVERSAL::DOES>.
 
 =head2 $object->dump($maxdepth)
 
-This is a handy utility for C<Data::Dumper>ing an object. By default,
-the maximum depth is 1, to avoid making a mess.
+=for stopwords ing
+
+This is a handy utility for L<Data::Dumper>ing an object. By default,
+there is no maximum depth.
 
 =head2 $object->DESTROY
 
@@ -260,7 +263,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

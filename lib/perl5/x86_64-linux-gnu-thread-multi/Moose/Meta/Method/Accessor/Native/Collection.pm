@@ -1,12 +1,12 @@
 package Moose::Meta::Method::Accessor::Native::Collection;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
 use Moose::Role;
 
-requires qw( _adds_members );
+requires qw( _adds_members _new_members );
 
 sub _inline_coerce_new_values {
     my $self = shift;
@@ -89,7 +89,7 @@ sub _check_new_members_only {
     return 1
         if $self->_is_root_type( $tc->parent )
             && ( $tc->isa('Moose::Meta::TypeConstraint::Parameterized')
-                 || $tc->isa('Specio::Constraint::Parameterized') );
+                 || !$tc->can('parameterize') );
 
     return 0;
 }

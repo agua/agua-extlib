@@ -7,7 +7,7 @@ package # hide from pause
 use strict;
 use warnings;
 
-our $VERSION = '0.15';
+our $VERSION = '0.24';
 
 use Tie::Hash ();
 use Hash::Util::FieldHash 'fieldhash';
@@ -25,7 +25,7 @@ fieldhash my %hh;
 {
   package # hide from pause too
     B::Hooks::EndOfScope::PP::_TieHintHashFieldHash;
-  use base 'Tie::StdHash';  # in Tie::Hash, in core
+  our @ISA = ( 'Tie::StdHash' );  # in Tie::Hash, in core
   sub DELETE {
     my $ret = shift->SUPER::DELETE(@_);
     B::Hooks::EndOfScope::PP::__invoke_callback($_) for @$ret;
@@ -39,7 +39,7 @@ sub on_scope_end (&) {
   tie(%hh, 'B::Hooks::EndOfScope::PP::_TieHintHashFieldHash')
     unless tied %hh;
 
-  push @{ $hh{\%^H} ||= [] }, shift;
+  push @{ $hh{\%^H} ||= [] }, $_[0];
 }
 
 1;

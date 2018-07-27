@@ -1,5 +1,5 @@
 package Moose::Meta::Method::Accessor;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -137,7 +137,7 @@ Moose::Meta::Method::Accessor - A Moose Method metaclass for accessors
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -145,7 +145,7 @@ This class is a subclass of L<Class::MOP::Method::Accessor> that
 provides additional Moose-specific functionality, all of which is
 private.
 
-To understand this class, you should read the the
+To understand this class, you should read the
 L<Class::MOP::Method::Accessor> documentation.
 
 =head1 BUGS
@@ -200,7 +200,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

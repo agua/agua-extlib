@@ -1,5 +1,5 @@
 package Moose::Meta::Role::Attribute;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -87,7 +87,9 @@ sub attribute_for_class {
     my $metaclass = $self->original_role->applied_attribute_metaclass;
 
     return $metaclass->interpolate_class_and_new(
-        $self->name => %{ $self->original_options } );
+        $self->name    => %{ $self->original_options },
+        role_attribute => $self,
+    );
 }
 
 sub clone {
@@ -140,7 +142,7 @@ Moose::Meta::Role::Attribute - The Moose attribute metaclass for Roles
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -249,7 +251,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

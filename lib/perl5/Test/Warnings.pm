@@ -1,10 +1,12 @@
 use strict;
 use warnings;
-package Test::Warnings; # git description: v0.020-10-g58c8076
+package Test::Warnings; # git description: v0.025-4-g6413c0f
 # ABSTRACT: Test for warnings and the lack of them
 # KEYWORDS: testing tests warnings
-# vim: set ts=8 sts=4 sw=4 tw=78 et :
-our $VERSION = '0.021';
+# vim: set ts=8 sts=4 sw=4 tw=115 et :
+
+our $VERSION = '0.026';
+
 use parent 'Exporter';
 use Test::Builder;
 
@@ -42,23 +44,29 @@ sub _builder(;$)
     $tb = shift;
 }
 
+my $_orig_warn_handler = $SIG{__WARN__};
 $SIG{__WARN__} = sub {
-    my $msg = shift;
-
     if ($warnings_allowed)
     {
-        Test::Builder->new->note($msg);
+        Test::Builder->new->note($_[0]);
     }
     else
     {
-        if ($msg =~ /\n$/) {
-            warn $msg;
+        $forbidden_warnings_found++;
+
+        # TODO: this doesn't handle blessed coderefs... does anyone care?
+        goto &$_orig_warn_handler if $_orig_warn_handler
+            and (  (ref $_orig_warn_handler eq 'CODE')
+                or ($_orig_warn_handler ne 'DEFAULT'
+                    and $_orig_warn_handler ne 'IGNORE'
+                    and defined &$_orig_warn_handler));
+
+        if ($_[0] =~ /\n$/) {
+            warn $_[0];
         } else {
             require Carp;
-            Carp::carp($msg);
+            Carp::carp($_[0]);
         }
-
-        $forbidden_warnings_found++;
     }
 };
 
@@ -146,7 +154,7 @@ Test::Warnings - Test for warnings and the lack of them
 
 =head1 VERSION
 
-version 0.021
+version 0.026
 
 =head1 SYNOPSIS
 
@@ -377,13 +385,6 @@ environment
 
 =back
 
-=head1 SUPPORT
-
-=for stopwords irc
-
-Bugs may be submitted through L<https://rt.cpan.org/Public/Dist/Display.html?Name=Test-Warnings>.
-I am also usually active on irc, as 'ether' at C<irc.perl.org>.
-
 =head1 SEE ALSO
 
 =for stopwords YANWT
@@ -418,21 +419,34 @@ L<Test::Fatal>
 
 =back
 
+=head1 SUPPORT
+
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=Test-Warnings>
+(or L<bug-Test-Warnings@rt.cpan.org|mailto:bug-Test-Warnings@rt.cpan.org>).
+
+There is also a mailing list available for users of this distribution, at
+L<http://lists.perl.org/list/perl-qa.html>.
+
+There is also an irc channel available for users of this distribution, at
+L<irc://irc.perl.org/#perl-qa>.
+
+I am also usually active on irc, as 'ether' at C<irc.perl.org>.
+
 =head1 AUTHOR
 
 Karen Etheridge <ether@cpan.org>
-
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2013 by Karen Etheridge.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
 
 =head1 CONTRIBUTOR
 
 =for stopwords A. Sinan Unur
 
 A. Sinan Unur <nanis@cpan.org>
+
+=head1 COPYRIGHT AND LICENCE
+
+This software is copyright (c) 2013 by Karen Etheridge.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

@@ -4,7 +4,7 @@
       "Florian Ragwitz <rafl@debian.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla::Plugin::MetaYaml version 1.004, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla::Plugin::MetaYaml version 1.004, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
@@ -19,6 +19,11 @@
             "ExtUtils::MakeMaker" : "0"
          }
       },
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
       "runtime" : {
          "requires" : {
             "Moose" : "0",
@@ -28,5 +33,5 @@
    },
    "release_status" : "stable",
    "version" : "0.01",
-   "x_serialization_backend" : "JSON::PP version 2.27202"
+   "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }

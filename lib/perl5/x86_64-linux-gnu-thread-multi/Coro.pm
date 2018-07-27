@@ -368,7 +368,7 @@ our $idle;    # idle handler
 our $main;    # main coro
 our $current; # current coro
 
-our $VERSION = 6.47;
+our $VERSION = 6.514;
 
 our @EXPORT = qw(async async_pool cede schedule terminate current unblock_sub rouse_cb rouse_wait);
 our %EXPORT_TAGS = (
@@ -500,12 +500,13 @@ will not work in the expected way, unless you call terminate or cancel,
 which somehow defeats the purpose of pooling (but is fine in the
 exceptional case).
 
-The priority will be reset to C<0> after each run, tracing will be
-disabled, the description will be reset and the default output filehandle
-gets restored, so you can change all these. Otherwise the coro will
-be re-used "as-is": most notably if you change other per-coro global
-stuff such as C<$/> you I<must needs> revert that change, which is most
-simply done by using local as in: C<< local $/ >>.
+The priority will be reset to C<0> after each run, all C<swap_sv> calls
+will be undone, tracing will be disabled, the description will be reset
+and the default output filehandle gets restored, so you can change all
+these. Otherwise the coro will be re-used "as-is": most notably if you
+change other per-coro global stuff such as C<$/> you I<must needs> revert
+that change, which is most simply done by using local as in: C<< local $/
+>>.
 
 The idle pool size is limited to C<8> idle coros (this can be
 adjusted by changing $Coro::POOL_SIZE), but there can be as many non-idle
@@ -639,7 +640,7 @@ installed those handlers.
    };
 
 This can be used to localise about any resource (locale, uid, current
-working directory etc.) to a block, despite the existance of other
+working directory etc.) to a block, despite the existence of other
 coros.
 
 Another interesting example implements time-sliced multitasking using
@@ -755,7 +756,7 @@ that.
 Returns true iff this Coro object is "new", i.e. has never been run
 yet. Those states basically consist of only the code reference to call and
 the arguments, but consumes very little other resources. New states will
-automatically get assigned a perl interpreter when they are transfered to.
+automatically get assigned a perl interpreter when they are transferred to.
 
 =item $state->is_zombie
 
@@ -783,9 +784,9 @@ multiple running Coro::States).
 Returns true iff this Coro object has been suspended. Suspended Coros will
 not ever be scheduled.
 
-=item $coro->cancel (arg...)
+=item $coro->cancel ($arg...)
 
-Terminates the given Coro thread and makes it return the given arguments as
+Terminate the given Coro thread and make it return the given arguments as
 status (default: an empty list). Never returns if the Coro is the
 current Coro.
 
@@ -831,10 +832,14 @@ guarantee that the thread can be cancelled when you call this method, and
 therefore, it might fail. It is also considerably slower than C<cancel> or
 C<terminate>.
 
-A thread is in a safe-cancellable state if it either hasn't been run yet,
-or it has no C context attached and is inside an SLF function.
+A thread is in a safe-cancellable state if it either has never been run
+yet, has already been canceled/terminated or otherwise destroyed, or has
+no C context attached and is inside an SLF function.
 
-The latter two basically mean that the thread isn't currently inside a
+The first two states are trivial - a thread that hasnot started or has
+already finished is safe to cancel.
+
+The last state basically means that the thread isn't currently inside a
 perl callback called from some C function (usually via some XS modules)
 and isn't currently executing inside some C function itself (via Coro's XS
 API).
@@ -1124,7 +1129,7 @@ called. This occurs naturally when you use coro in an otherwise
 event-based program, or when you use event-based libraries.
 
 These typically register a callback for some event, and call that callback
-when the event occured. In a coro, however, you typically want to
+when the event occurred. In a coro, however, you typically want to
 just wait for the event, simplyifying things.
 
 For example C<< AnyEvent->child >> registers a callback to be called when
@@ -1263,7 +1268,7 @@ actually take advantage of custom hardware for this purpose (as evidenced
 by the forks module, which gives you the (i-) threads API, just much
 faster).
 
-Sharing data is in the i-threads model is done by transfering data
+Sharing data is in the i-threads model is done by transferring data
 structures between threads using copying semantics, which is very slow -
 shared data simply does not exist. Benchmarks using i-threads which are
 communication-intensive show extremely bad behaviour with i-threads (in

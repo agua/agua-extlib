@@ -1,6 +1,2 @@
-/mnt/repos/private/syoung/aguadev/extlib/bin/use-devel-checklib
-/mnt/repos/private/syoung/aguadev/extlib/lib/perl5/Devel/CheckLib.pm
-/usr/local/bin/use-devel-checklib
-/usr/local/man/man1/use-devel-checklib.1p
-/usr/local/man/man3/Devel::CheckLib.3pm
-/usr/local/share/perl/5.18.2/Devel/CheckLib.pm
+/mnt/repos/agua/flow/extlib/bin/use-devel-checklib
+/mnt/repos/agua/flow/extlib/lib/perl5/Devel/CheckLib.pm

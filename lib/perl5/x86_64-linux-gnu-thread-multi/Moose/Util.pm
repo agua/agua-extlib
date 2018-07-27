@@ -1,12 +1,11 @@
 package Moose::Util;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Module::Runtime 0.014 'use_package_optimistically', 'use_module', 'module_notional_filename';
+use Module::Runtime 0.014 'use_package_optimistically', 'module_notional_filename';
 use Data::OptList;
-use Params::Util qw( _STRING );
 use Sub::Exporter;
 use Scalar::Util 'blessed';
 use List::Util 1.33 qw(first any all);
@@ -144,7 +143,7 @@ sub _apply_all_roles {
             $meta = $role->[0];
         }
         else {
-            &use_module($role->[0], $role->[1] && $role->[1]{-version} ? $role->[1]{-version} : ());
+            _load_user_class( $role->[0] , $role->[1] );
             $meta = find_meta( $role->[0] );
         }
 
@@ -263,11 +262,11 @@ sub add_method_modifier {
         : find_meta($class_or_obj);
     my $code                = pop @{$args};
     my $add_modifier_method = 'add_' . $modifier_name . '_method_modifier';
-    if ( my $method_modifier_type = ref( @{$args}[0] ) ) {
+    if ( my $method_modifier_type = ref( $args->[0] ) ) {
         if ( $method_modifier_type eq 'Regexp' ) {
             my @all_methods = $meta->get_all_methods;
             my @matched_methods
-                = grep { $_->name =~ @{$args}[0] } @all_methods;
+                = grep { $_->name =~ $args->[0] } @all_methods;
             $meta->$add_modifier_method( $_->name, $code )
                 for @matched_methods;
         }
@@ -354,13 +353,9 @@ sub _load_user_class {
 
 # XXX - this should be added to Params::Util
 sub _STRINGLIKE0 ($) {
-    return 1 if _STRING( $_[0] );
-    if ( blessed $_[0] ) {
-        return overload::Method( $_[0], q{""} );
-    }
-
-    return 1 if defined $_[0] && $_[0] eq q{};
-
+    return 0 if !defined $_[0];
+    return 1 if !ref $_[0];
+    return 1 if overload::OverloadedStringify($_[0]);
     return 0;
 }
 
@@ -541,7 +536,7 @@ Moose::Util - Utilities for working with Moose classes
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -722,7 +717,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

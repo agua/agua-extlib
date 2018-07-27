@@ -1,8 +1,8 @@
 package Moose::Exception;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use Moose;
-use Devel::StackTrace 1.33;
+use Devel::StackTrace 2.03;
 
 has 'trace' => (
     is            => 'ro',
@@ -15,15 +15,16 @@ has 'trace' => (
 
 has 'message' => (
     is            => 'ro',
-    isa           => 'Str',
+    isa           => 'Defined',
     builder       => '_build_message',
     lazy          => 1,
-    documentation => "This attribute is read-only and isa Str. ".
+    documentation => "This attribute is read-only and isa Defined. ".
                      "It is lazy and has a default value 'Error'."
 );
 
 use overload(
     q{""}    => 'as_string',
+    bool     => sub () { 1 },
     fallback => 1,
 );
 
@@ -35,7 +36,8 @@ sub _build_trace {
     # be weakening all references in its frames)
     my $skip = 0;
     while (my @c = caller(++$skip)) {
-        last if $c[3] =~ /^(.*)::new$/ && $self->isa($1);
+        last if ($c[3] =~ /^(.*)::new$/ || $c[3] =~ /^\S+ (.*)::new \(defined at /)
+            && $self->isa($1);
     }
     $skip++;
 
@@ -90,6 +92,7 @@ sub as_string {
     return $message;
 }
 
+__PACKAGE__->meta->make_immutable;
 1;
 
 # ABSTRACT: Superclass for Moose internal exceptions
@@ -106,7 +109,7 @@ Moose::Exception - Superclass for Moose internal exceptions
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -200,7 +203,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

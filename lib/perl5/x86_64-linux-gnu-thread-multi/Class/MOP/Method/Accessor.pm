@@ -1,5 +1,5 @@
 package Class::MOP::Method::Accessor;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -169,11 +169,6 @@ sub _generate_reader_method_inline {
     };
 }
 
-sub _inline_throw_exception {
-    my ( $self, $exception_type, $throw_args ) = @_;
-    return 'die Module::Runtime::use_module("Moose::Exception::' . $exception_type . '")->new(' . ($throw_args || '') . ')';
-}
-
 sub _generate_writer_method {
     my $self = shift;
     my $attr = $self->associated_attribute;
@@ -274,7 +269,7 @@ Class::MOP::Method::Accessor - Method Meta Object for accessors
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -401,7 +396,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

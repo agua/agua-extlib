@@ -11,13 +11,13 @@ Scope::Upper - Act on upper scopes.
 
 =head1 VERSION
 
-Version 0.28
+Version 0.30
 
 =cut
 
 our $VERSION;
 BEGIN {
- $VERSION = '0.28';
+ $VERSION = '0.30';
 }
 
 =head1 SYNOPSIS
@@ -858,11 +858,14 @@ You can find documentation for this module with the perldoc command.
 
 Inspired by Ricardo Signes.
 
+The reimplementation of a large part of this module for perl 5.24 was provided by David Mitchell.
+His work was sponsored by the Perl 5 Core Maintenance Grant from The Perl Foundation.
+
 Thanks to Shawn M. Moore for motivation.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2008,2009,2010,2011,2012,2013,2014,2015 Vincent Pit, all rights reserved.
+Copyright 2008,2009,2010,2011,2012,2013,2014,2015,2016,2017 Vincent Pit, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 

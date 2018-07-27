@@ -1,28 +1,20 @@
 use strict;
 use warnings;
-
-package Test::CleanNamespaces; # git description: v0.17-1-gc38f0ce
+package Test::CleanNamespaces; # git description: v0.22-6-g67eaa09
 # ABSTRACT: Check for uncleaned imports
 # KEYWORDS: testing namespaces clean dirty imports exports subroutines methods
-$Test::CleanNamespaces::VERSION = '0.18';
-use Module::Runtime qw(require_module module_notional_filename);
-use Sub::Identify qw(sub_fullname stash_name);
+
+our $VERSION = '0.23';
+
+use Module::Runtime ();
+use Sub::Identify ();
 use Package::Stash 0.14;
 use Test::Builder;
-use File::Find::Rule;
-use File::Find::Rule::Perl;
-use File::Spec::Functions 'splitdir';
-use namespace::clean;
+use File::Find ();
+use File::Spec;
 
-use Sub::Exporter -setup => {
-    exports => [
-        namespaces_clean     => \&build_namespaces_clean,
-        all_namespaces_clean => \&build_all_namespaces_clean,
-    ],
-    groups => {
-        default => [qw/namespaces_clean all_namespaces_clean/],
-    },
-};
+use Exporter 5.57 'import';
+our @EXPORT = qw(namespaces_clean all_namespaces_clean);
 
 #pod =head1 SYNOPSIS
 #pod
@@ -56,64 +48,35 @@ use Sub::Exporter -setup => {
 #pod
 #pod Runs L</namespaces_clean> for all modules in your distribution.
 #pod
-#pod =head1 METHODS
-#pod
-#pod The exported functions are constructed using the the following methods. This is
-#pod what you want to override if you're subclassing this module.
-#pod
-#pod =head2 build_namespaces_clean
-#pod
-#pod     my $coderef = Test::CleanNamespaces->build_namespaces_clean;
-#pod
-#pod Returns a coderef that will be exported as C<namespaces_clean> (or the
-#pod specified sub name, if provided).
-#pod
 #pod =cut
 
-sub build_namespaces_clean {
-    my ($class, $name) = @_;
-    return sub {
-        my (@namespaces) = @_;
-        local $@;
+sub namespaces_clean {
+    my (@namespaces) = @_;
+    local $@;
+    my $builder = builder();
 
-        my $result = 1;
-        for my $ns (@namespaces) {
-            unless (eval { require_module($ns); 1 }) {
-                $class->builder->skip("failed to load ${ns}: $@");
-                next;
-            }
-
-            my $imports = _remaining_imports($ns);
-
-            my $ok = $class->builder->ok(!keys(%$imports), "${ns} contains no imported functions");
-            $ok or $class->builder->diag($class->builder->explain('remaining imports: ' => $imports));
-
-            $result &&= $ok;
+    my $result = 1;
+    for my $ns (@namespaces) {
+        unless (eval { Module::Runtime::require_module($ns); 1 }) {
+            $builder->skip("failed to load ${ns}: $@");
+            next;
         }
 
-        return $result;
-    };
+        my $imports = _remaining_imports($ns);
+
+        my $ok = $builder->ok(!keys(%$imports), "${ns} contains no imported functions");
+        $ok or $builder->diag($builder->explain('remaining imports: ' => $imports));
+
+        $result &&= $ok;
+    }
+
+    return $result;
 }
 
-#pod =head2 build_all_namespaces_clean
-#pod
-#pod     my $coderef = Test::CleanNamespaces->build_all_namespaces_clean;
-#pod
-#pod Returns a coderef that will be exported as C<all_namespaces_clean>.
-#pod (or the specified sub name, if provided).
-#pod It will use
-#pod the C<find_modules> method to get the list of modules to check.
-#pod
-#pod =cut
-
-sub build_all_namespaces_clean {
-    my ($class, $name) = @_;
-    my $namespaces_clean = $class->build_namespaces_clean();
-    return sub {
-        my @modules = $class->find_modules(@_);
-        $class->builder->plan(tests => scalar @modules);
-        $namespaces_clean->(@modules);
-    };
+sub all_namespaces_clean {
+    my @modules = find_modules(@_);
+    builder()->plan(tests => scalar @modules);
+    namespaces_clean(@modules);
 }
 
 # given a package name, returns a hashref of all remaining imports
@@ -124,7 +87,7 @@ sub _remaining_imports {
     my @imports;
 
     my $meta;
-    if ($INC{ module_notional_filename('Class::MOP') }
+    if ($INC{ Module::Runtime::module_notional_filename('Class::MOP') }
         and $meta = Class::MOP::class_of($ns)
         and $meta->can('get_method_list'))
     {
@@ -132,7 +95,7 @@ sub _remaining_imports {
         delete @subs{ $meta->get_method_list };
         @imports = keys %subs;
     }
-    elsif ($INC{ module_notional_filename('Mouse::Util') }
+    elsif ($INC{ Module::Runtime::module_notional_filename('Mouse::Util') }
         and Mouse::Util->can('class_of') and $meta = Mouse::Util::class_of($ns))
     {
         warn 'Mouse class detected - chance of false negatives is high!';
@@ -145,14 +108,14 @@ sub _remaining_imports {
     else
     {
         @imports = grep {
-            my $stash = stash_name($symbols->{$_});
+            my $stash = Sub::Identify::stash_name($symbols->{$_});
             $stash ne $ns
                 and $stash ne 'Role::Tiny'
                 and not eval { require Role::Tiny; Role::Tiny->is_role($stash) }
         } keys %$symbols;
     }
 
-    my %imports; @imports{@imports} = map { sub_fullname($symbols->{$_}) } @imports;
+    my %imports; @imports{@imports} = map { Sub::Identify::sub_fullname($symbols->{$_}) } @imports;
 
     # these subs are special-cased - they are often provided by other
     # modules, but cannot be wrapped with Sub::Name as the call stack
@@ -162,7 +125,7 @@ sub _remaining_imports {
     my @overloads = grep { $imports{$_} eq 'overload::nil' || $imports{$_} eq 'overload::_nil' } keys %imports;
     delete @imports{@overloads} if @overloads;
 
-    if ($] < 5.010)
+    if ("$]" < 5.010)
     {
         my @constants = grep { $imports{$_} eq 'constant::__ANON__' } keys %imports;
         delete @imports{@constants} if @constants;
@@ -181,14 +144,20 @@ sub _remaining_imports {
 #pod =cut
 
 sub find_modules {
-    my ($class) = @_;
-    my @modules = map {
-        /^blib/
-            ? s/^blib.(?:lib|arch).//
-            : s/^lib.//;
-        s/\.pm$//;
-        join '::' => splitdir($_);
-    } File::Find::Rule->perl_module->in(-e 'blib' ? 'blib' : 'lib');
+    my @modules;
+    for my $top (-e 'blib' ? ('blib/lib', 'blib/arch') : 'lib') {
+        File::Find::find({
+            no_chdir => 1,
+            wanted => sub {
+                my $file = $_;
+                return
+                    unless $file =~ s/\.pm$//;
+                push @modules, join '::' => File::Spec->splitdir(
+                    File::Spec->abs2rel(File::Spec->rel2abs($file, '.'), $top)
+                );
+            },
+        }, $top);
+    }
     return @modules;
 }
 
@@ -219,7 +188,7 @@ Test::CleanNamespaces - Check for uncleaned imports
 
 =head1 VERSION
 
-version 0.18
+version 0.23
 
 =head1 SYNOPSIS
 
@@ -252,27 +221,6 @@ be loaded it will be skipped.
     all_namespaces_clean;
 
 Runs L</namespaces_clean> for all modules in your distribution.
-
-=head1 METHODS
-
-The exported functions are constructed using the the following methods. This is
-what you want to override if you're subclassing this module.
-
-=head2 build_namespaces_clean
-
-    my $coderef = Test::CleanNamespaces->build_namespaces_clean;
-
-Returns a coderef that will be exported as C<namespaces_clean> (or the
-specified sub name, if provided).
-
-=head2 build_all_namespaces_clean
-
-    my $coderef = Test::CleanNamespaces->build_all_namespaces_clean;
-
-Returns a coderef that will be exported as C<all_namespaces_clean>.
-(or the specified sub name, if provided).
-It will use
-the C<find_modules> method to get the list of modules to check.
 
 =head2 find_modules
 
@@ -337,21 +285,42 @@ L<Dist::Zilla::Plugin::Test::CleanNamespaces>
 
 =back
 
+=head1 SUPPORT
+
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=Test-CleanNamespaces>
+(or L<bug-Test-CleanNamespaces@rt.cpan.org|mailto:bug-Test-CleanNamespaces@rt.cpan.org>).
+
+There is also a mailing list available for users of this distribution, at
+L<http://lists.perl.org/list/perl-qa.html>.
+
+There is also an irc channel available for users of this distribution, at
+L<C<#perl> on C<irc.perl.org>|irc://irc.perl.org/#perl-qa>.
+
 =head1 AUTHOR
 
 Florian Ragwitz <rafl@debian.org>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 CONTRIBUTORS
+
+=for stopwords Karen Etheridge Graham Knop
+
+=over 4
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Graham Knop <haarg@haarg.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENCE
 
 This software is copyright (c) 2009 by Florian Ragwitz.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
-
-=head1 CONTRIBUTOR
-
-=for stopwords Karen Etheridge
-
-Karen Etheridge <ether@cpan.org>
 
 =cut

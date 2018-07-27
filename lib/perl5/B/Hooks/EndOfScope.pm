@@ -1,16 +1,13 @@
-package B::Hooks::EndOfScope; # git description: 0.14-19-g9296689
+package B::Hooks::EndOfScope; # git description: 0.23-2-ga391106
 # ABSTRACT: Execute code after a scope finished compilation
 # KEYWORDS: code hooks execution scope
 
 use strict;
 use warnings;
 
-our $VERSION = '0.15';
+our $VERSION = '0.24';
 
-# note - a %^H tie() fallback will probably work on 5.6 as well,
-# if you need to go that low - sane patches passing *all* tests
-# will be gladly accepted
-use 5.008001;
+use 5.006001;
 
 BEGIN {
   use Module::Implementation 0.05;
@@ -24,53 +21,6 @@ use Sub::Exporter::Progressive 0.001006 -setup => {
   exports => [ 'on_scope_end' ],
   groups  => { default => ['on_scope_end'] },
 };
-
-#pod =head1 SYNOPSIS
-#pod
-#pod     on_scope_end { ... };
-#pod
-#pod =head1 DESCRIPTION
-#pod
-#pod This module allows you to execute code when perl finished compiling the
-#pod surrounding scope.
-#pod
-#pod =func on_scope_end
-#pod
-#pod     on_scope_end { ... };
-#pod
-#pod     on_scope_end $code;
-#pod
-#pod Registers C<$code> to be executed after the surrounding scope has been
-#pod compiled.
-#pod
-#pod This is exported by default. See L<Sub::Exporter> on how to customize it.
-#pod
-#pod =head1 PURE-PERL MODE CAVEAT
-#pod
-#pod While L<Variable::Magic> has access to some very dark sorcery to make it
-#pod possible to throw an exception from within a callback, the pure-perl
-#pod implementation does not have access to these hacks. Therefore, what
-#pod would have been a compile-time exception is instead converted to a
-#pod warning, and your execution will continue as if the exception never
-#pod happened.
-#pod
-#pod To explicitly request an XS (or PP) implementation one has two choices. Either
-#pod to import from the desired implementation explicitly:
-#pod
-#pod  use B::Hooks::EndOfScope::XS
-#pod    or
-#pod  use B::Hooks::EndOfScope::PP
-#pod
-#pod or by setting C<$ENV{B_HOOKS_ENDOFSCOPE_IMPLEMENTATION}> to either C<XS> or
-#pod C<PP>.
-#pod
-#pod =head1 SEE ALSO
-#pod
-#pod L<Sub::Exporter>
-#pod
-#pod L<Variable::Magic>
-#pod
-#pod =cut
 
 1;
 
@@ -86,7 +36,7 @@ B::Hooks::EndOfScope - Execute code after a scope finished compilation
 
 =head1 VERSION
 
-version 0.15
+version 0.24
 
 =head1 SYNOPSIS
 
@@ -110,13 +60,18 @@ compiled.
 
 This is exported by default. See L<Sub::Exporter> on how to customize it.
 
-=head1 PURE-PERL MODE CAVEAT
+=head1 LIMITATIONS
+
+=head2 Pure-perl mode caveat
+
+This caveat applies to B<any> version of perl where L<Variable::Magic>
+is unavailable or otherwise disabled.
 
 While L<Variable::Magic> has access to some very dark sorcery to make it
 possible to throw an exception from within a callback, the pure-perl
 implementation does not have access to these hacks. Therefore, what
-would have been a compile-time exception is instead converted to a
-warning, and your execution will continue as if the exception never
+would have been a B<compile-time exception> is instead B<converted to a
+warning>, and your execution will continue as if the exception never
 happened.
 
 To explicitly request an XS (or PP) implementation one has two choices. Either
@@ -129,11 +84,42 @@ to import from the desired implementation explicitly:
 or by setting C<$ENV{B_HOOKS_ENDOFSCOPE_IMPLEMENTATION}> to either C<XS> or
 C<PP>.
 
+=head2 Perl 5.8.0 ~ 5.8.3
+
+Due to a L<core interpreter bug
+|https://rt.perl.org/Public/Bug/Display.html?id=27040#txn-82797> present in
+older perl versions, the implementation of B::Hooks::EndOfScope deliberately
+leaks a single empty hash for every scope being cleaned. This is done to
+avoid the memory corruption associated with the bug mentioned above.
+
+In order to stabilize this workaround use of L<Variable::Magic> is disabled
+on perls prior to version 5.8.4. On such systems loading/requesting
+L<B::Hooks::EndOfScope::XS> explicitly will result in a compile-time
+exception.
+
+=head2 Perl versions 5.6.x
+
+Versions of perl before 5.8.0 lack a feature allowing changing the visibility
+of C<%^H> via setting bit 17 within C<$^H>. As such the only way to achieve
+the effect necessary for this module to work, is to use the C<local> operator
+explicitly on these platforms. This might lead to unexpected interference
+with other scope-driven libraries relying on the same mechanism. On the flip
+side there are no such known incompatibilities at the time this note was
+written.
+
+For further details on the unavailable behavior please refer to the test
+file F<t/02-localise.t> included with the distribution.
+
 =head1 SEE ALSO
 
 L<Sub::Exporter>
 
 L<Variable::Magic>
+
+=head1 SUPPORT
+
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=B-Hooks-EndOfScope>
+(or L<bug-B-Hooks-EndOfScope@rt.cpan.org|mailto:bug-B-Hooks-EndOfScope@rt.cpan.org>).
 
 =head1 AUTHORS
 
@@ -145,20 +131,13 @@ Florian Ragwitz <rafl@debian.org>
 
 =item *
 
-Peter Rabbitson <ribasushi@cpan.org>
+Peter Rabbitson <ribasushi@leporine.io>
 
 =back
 
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2008 by Florian Ragwitz.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
 =head1 CONTRIBUTORS
 
-=for stopwords Karen Etheridge Simon Wilper Tatsuhiko Miyagawa Tomas Doran
+=for stopwords Karen Etheridge Tatsuhiko Miyagawa Christian Walde Tomas Doran Graham Knop Simon Wilper
 
 =over 4
 
@@ -168,16 +147,31 @@ Karen Etheridge <ether@cpan.org>
 
 =item *
 
-Simon Wilper <sxw@chronowerks.de>
+Tatsuhiko Miyagawa <miyagawa@bulknews.net>
 
 =item *
 
-Tatsuhiko Miyagawa <miyagawa@bulknews.net>
+Christian Walde <walde.christian@googlemail.com>
 
 =item *
 
 Tomas Doran <bobtfish@bobtfish.net>
 
+=item *
+
+Graham Knop <haarg@haarg.org>
+
+=item *
+
+Simon Wilper <sxw@chronowerks.de>
+
 =back
+
+=head1 COPYRIGHT AND LICENCE
+
+This software is copyright (c) 2008 by Florian Ragwitz.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

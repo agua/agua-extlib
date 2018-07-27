@@ -6,7 +6,9 @@ use Test::Builder;
 use Sub::Uplevel qw( uplevel );
 use base qw( Exporter );
 
-our $VERSION = '0.40';
+our $VERSION = '0.43';
+$VERSION = eval $VERSION;
+
 our @EXPORT = qw(dies_ok lives_ok throws_ok lives_and);
 
 my $Tester = Test::Builder->new;
@@ -214,11 +216,11 @@ form part of the string that throws_ok regular expressions match against.
 sub throws_ok (&$;$) {
     my ( $coderef, $expecting, $description ) = @_;
     unless (defined $expecting) {
-      require Carp;
-      Carp::croak( "throws_ok: must pass exception class/object or regex" ); 
+        require Carp;
+        Carp::croak( "throws_ok: must pass exception class/object or regex" ); 
     }
     $description = _exception_as_string( "threw", $expecting )
-    	unless defined $description;
+        unless defined $description;
     my $exception = _try_as_caller( $coderef );
     my $regex = $Tester->maybe_regex( $expecting );
     my $ok = $regex 
@@ -301,7 +303,7 @@ sub lives_ok (&;$) {
     my ( $coderef, $description ) = @_;
     my $exception = _try_as_caller( $coderef );
     my $ok = $Tester->ok( ! _is_exception( $exception ), $description );
-	$Tester->diag( _exception_as_string( "died:", $exception ) ) unless $ok;
+    $Tester->diag( _exception_as_string( "died:", $exception ) ) unless $ok;
     $@ = $exception;
     return $ok;
 }
@@ -337,29 +339,13 @@ The test description is optional, but recommended.
 
 =cut
 
-my $is_stream = $INC{'Test/Stream/Sync.pm'};
-our $LIVES_AND_NAME;
-if ($is_stream) {
-    Test::Stream::Sync->stack->top->munge(sub {
-        return unless defined $LIVES_AND_NAME;
-        my ($stream, $e) = @_;
-        return unless $e->isa('Test::Stream::Event::Ok');
-        return if defined $e->name;
-        $e->set_name($LIVES_AND_NAME);
-    });
-}
-
 sub lives_and (&;$) {
     my ( $test, $description ) = @_;
-    if ($is_stream) {
-        local $LIVES_AND_NAME = $description;
-        eval { $test->() } and return 1;
-    }
-    else {
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
+    {
         my $ok = \&Test::Builder::ok;
         no warnings;
         local *Test::Builder::ok = sub {
+            local $Test::Builder::Level = $Test::Builder::Level + 1;
             $_[2] = $description unless defined $_[2];
             $ok->(@_);
         };

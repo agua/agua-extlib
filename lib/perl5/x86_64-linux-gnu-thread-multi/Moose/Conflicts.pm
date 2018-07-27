@@ -4,7 +4,7 @@ package # hide from PAUSE
 use strict;
 use warnings;
 
-# this module was generated with Dist::Zilla::Plugin::Conflicts 0.17
+# this module was generated with Dist::Zilla::Plugin::Conflicts 0.19
 
 use Dist::CheckConflicts
     -dist      => 'Moose',
@@ -12,6 +12,7 @@ use Dist::CheckConflicts
         'Catalyst' => '5.90049999',
         'Config::MVP' => '2.200004',
         'Devel::REPL' => '1.003020',
+        'Dist::Zilla' => '5.043',
         'Dist::Zilla::Plugin::Git' => '2.016',
         'Fey' => '0.36',
         'Fey::ORM' => '0.42',
@@ -20,12 +21,13 @@ use Dist::CheckConflicts
         'KiokuDB' => '0.51',
         'Markdent' => '0.16',
         'Mason' => '2.18',
+        'Moose::Autobox' => '0.15',
         'MooseX::ABC' => '0.05',
         'MooseX::Aliases' => '0.08',
         'MooseX::AlwaysCoerce' => '0.13',
         'MooseX::App' => '1.22',
         'MooseX::Attribute::Deflator' => '2.1.7',
-        'MooseX::Attribute::Dependent' => '1.1.0',
+        'MooseX::Attribute::Dependent' => '1.1.3',
         'MooseX::Attribute::Prototype' => '0.10',
         'MooseX::AttributeHelpers' => '0.22',
         'MooseX::AttributeIndexes' => '1.0.0',
@@ -64,6 +66,7 @@ use Dist::CheckConflicts
         'MooseX::Types::Set::Object' => '0.03',
         'MooseX::Types::Signal' => '1.101930',
         'MooseX::UndefTolerant' => '0.11',
+        'Net::Twitter' => '4.01041',
         'PRANG' => '0.14',
         'Pod::Elemental' => '0.093280',
         'Pod::Weaver' => '3.101638',
@@ -85,7 +88,6 @@ use Dist::CheckConflicts
         Devel::StackTrace
         Dist::CheckConflicts
         Eval::Closure
-        List::MoreUtils
         List::Util
         MRO::Compat
         Module::Runtime
@@ -98,7 +100,6 @@ use Dist::CheckConflicts
         Sub::Exporter
         Sub::Identify
         Sub::Name
-        Task::Weaken
         Try::Tiny
         parent
         strict

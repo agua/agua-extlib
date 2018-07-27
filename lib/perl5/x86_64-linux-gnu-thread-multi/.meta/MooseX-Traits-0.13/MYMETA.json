@@ -4,7 +4,7 @@
       "Jonathan Rockway <jrockway@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.039, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Dist::Zilla version 5.039, CPAN::Meta::Converter version 2.150005, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
@@ -1228,6 +1228,6 @@
       "Alexander Hartmaier <abraxxa@cpan.org>"
    ],
    "x_permissions_from_module" : "MooseX::Traits",
-   "x_serialization_backend" : "JSON::PP version 2.27202",
+   "x_serialization_backend" : "JSON::PP version 2.27400_02",
    "x_static_install" : 1
 }

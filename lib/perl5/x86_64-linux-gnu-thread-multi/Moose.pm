@@ -1,7 +1,7 @@
 use strict;
 use warnings;
-package Moose; # git description: 2.1602-5-g942b58b
-our $VERSION = '2.1603';
+package Moose; # git description: 2.2010-13-g18a585ef2
+our $VERSION = '2.2011';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use 5.008003;
@@ -16,10 +16,8 @@ use Moose::Exporter;
 
 use Class::MOP;
 
-BEGIN {
-    die "Class::MOP version $Moose::VERSION required--this is version $Class::MOP::VERSION"
-        if $Moose::VERSION && $Class::MOP::VERSION ne $Moose::VERSION;
-}
+die "Class::MOP version $Moose::VERSION required--this is version $Class::MOP::VERSION"
+    if $Class::MOP::VERSION ne $Moose::VERSION;
 
 use Moose::Meta::Class;
 use Moose::Meta::TypeConstraint;
@@ -300,7 +298,7 @@ Moose - A postmodern object system for Perl 5
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -458,6 +456,10 @@ exception will be thrown.
 If your role takes options or arguments, they can be passed along in the
 hash reference as well.
 
+You should only use one C<with>, even if you are consuming multiple roles. If
+you consume roles using multiple C<with> statements Moose cannot detect method
+conflicts between those roles.
+
 =head2 has $name|@$names =E<gt> %options
 
 This will install an attribute of a given C<$name> into the current class. If
@@ -507,7 +509,7 @@ is expected to have consumed.
 
 This marks the attribute as being required. This means a value must be
 supplied during class construction, I<or> the attribute must be lazy
-and have either a default or a builder. Note that c<required> does not
+and have either a default or a builder. Note that C<required> does not
 say anything about the attribute's value, which can be C<undef>.
 
 =item I<weak_ref =E<gt> (1|0)>
@@ -1259,7 +1261,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

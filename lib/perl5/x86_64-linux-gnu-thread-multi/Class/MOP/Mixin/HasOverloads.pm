@@ -1,12 +1,12 @@
 package Class::MOP::Mixin::HasOverloads;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
 use Class::MOP::Overload;
 
-use Devel::OverloadInfo 0.004 'overload_info';
+use Devel::OverloadInfo 0.005 'overload_info', 'overload_op_info';
 use Scalar::Util 'blessed';
 use Sub::Identify 'sub_name', 'stash_name';
 
@@ -34,7 +34,7 @@ sub get_all_overloaded_operators {
 sub has_overloaded_operator {
     my $self = shift;
     my ($op) = @_;
-    return defined $self->_overload_info->{$op};
+    return defined $self->_overload_info_for($op);
 }
 
 sub _overload_map {
@@ -47,7 +47,7 @@ sub get_overloaded_operator {
     return $self->_overload_map->{$op} ||= $self->_overload_for($op);
 }
 
-use constant _SET_FALLBACK_EACH_TIME => $] < 5.120;
+use constant _SET_FALLBACK_EACH_TIME => "$]" < 5.120;
 
 sub add_overloaded_operator {
     my $self = shift;
@@ -103,14 +103,14 @@ sub remove_overloaded_operator {
     # overload.pm provides no api for this - but the problem that makes this
     # necessary has been fixed in 5.18
     $self->get_or_add_package_symbol('%OVERLOAD')->{dummy}++
-        if $] < 5.017000;
+        if "$]" < 5.017000;
 
     $self->remove_package_symbol('&(' . $op);
 }
 
 sub get_overload_fallback_value {
     my $self = shift;
-    return $self->_overload_info->{fallback}{value};
+    return ($self->_overload_info_for('fallback') || {})->{value};
 }
 
 sub set_overload_fallback_value {
@@ -127,6 +127,12 @@ sub _overload_info {
     return overload_info( $self->name ) || {};
 }
 
+sub _overload_info_for {
+    my $self = shift;
+    my $op   = shift;
+    return overload_op_info( $self->name, $op );
+}
+
 sub _overload_for {
     my $self = shift;
     my $op   = shift;
@@ -134,7 +140,7 @@ sub _overload_for {
     my $map = $self->_overload_map;
     return $map->{$op} if $map->{$op};
 
-    my $info = $self->_overload_info->{$op};
+    my $info = $self->_overload_info_for($op);
     return unless $info;
 
     my %p = (
@@ -173,7 +179,7 @@ Class::MOP::Mixin::HasOverloads - Methods for metaclasses which have overloads
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -229,7 +235,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

@@ -4,7 +4,7 @@
       "Ash Berlin <ash@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Module::Install version 1.06, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Module::Install version 1.06, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
@@ -32,10 +32,7 @@
       },
       "configure" : {
          "requires" : {
-            "B::Hooks::OP::Check" : "0.18",
-            "B::Hooks::OP::PPAddr" : "0.03",
-            "ExtUtils::Depends" : "0.302",
-            "ExtUtils::MakeMaker" : "6.59"
+            "ExtUtils::MakeMaker" : "0"
          }
       },
       "runtime" : {
@@ -74,5 +71,5 @@
       }
    },
    "version" : "1.003002",
-   "x_serialization_backend" : "JSON::PP version 2.27202"
+   "x_serialization_backend" : "JSON::PP version 2.27400_02"
 }

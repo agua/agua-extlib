@@ -1,10 +1,10 @@
 # automatically generated from constants.pl.PL
 sub AnyEvent::common_sense {
    local $^W;
-   ${^WARNING_BITS} ^= ${^WARNING_BITS} ^ "\x3c\x3f\x33\x00\x0f\xf0\x0f\xc0\xf0\xfc\x33\x00\x00\x00";
+   ${^WARNING_BITS} ^= ${^WARNING_BITS} ^ "\x0c\x3f\x33\x00\x0f\xf0\x0f\xc0\xf0\xfc\x33\x00\x00\x00\x0c\x00\x00";
    $^H |= 0x7c0;
 }
-# generated for perl 5.018002 built for x86_64-linux-gnu-thread-multi
+# generated for perl 5.026001 built for x86_64-linux-gnu-thread-multi
 package AnyEvent;
 sub CYGWIN(){0}
 sub WIN32(){0}
@@ -28,10 +28,15 @@ sub WSAEWOULDBLOCK(){-1e+99}
 sub WSAEINPROGRESS(){-1e+99}
 sub _AF_INET6(){10}
 package AnyEvent::Socket;
+sub MSG_DONTWAIT(){64}
+sub MSG_FASTOPEN(){536870912}
+sub MSG_MORE(){32768}
+sub MSG_NOSIGNAL(){16384}
 sub TCP_CONGESTION(){13}
 sub TCP_CONNECTIONTIMEOUT(){undef}
 sub TCP_CORK(){3}
 sub TCP_DEFER_ACCEPT(){9}
+sub TCP_FASTOPEN(){23}
 sub TCP_INFO(){11}
 sub TCP_INIT_CWND(){undef}
 sub TCP_KEEPALIVE(){undef}

@@ -1,5 +1,5 @@
 package Moose::Meta::Attribute::Native::Trait::Array;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use Moose::Role;
 with 'Moose::Meta::Attribute::Native::Trait';
@@ -24,7 +24,7 @@ Moose::Meta::Attribute::Native::Trait::Array - Helper trait for ArrayRef attribu
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -88,10 +88,13 @@ This method does not accept any arguments.
 
 =item * B<elements>
 
-Returns all of the elements of the array as an array (not an array reference).
+In list context, returns all of the elements of the array as a list.
 
-  my @option = $stuff->all_options;
-  print "@options\n";    # prints "foo bar baz boo"
+In scalar context, returns the number of elements in the array.
+
+  my @options = $stuff->all_options;
+  print "@options";    # prints "foo bar baz boo"
+  print scalar $stuff->all_options; # prints 4
 
 This method does not accept any arguments.
 
@@ -157,10 +160,11 @@ This method requires a single argument.
 =item * B<first_index( sub { ... } )>
 
 This method returns the index of the first matching item in the array, just
-like L<List::MoreUtils>'s C<first_index> function. The matching is done with a
+like L<List::SomeUtils/first_index>. The matching is done with a
 subroutine reference you pass to this method. The subroutine will be called
 against each element in the array until one matches or all elements have been
 checked. Each list element will be available to the sub in C<$_>.
+If no match is made, -1 is returned.
 
 This method requires a single argument.
 
@@ -242,8 +246,7 @@ This method does not accept any arguments.
 
 =item * B<uniq>
 
-Returns the array with all duplicate elements removed, like C<uniq> from
-L<List::MoreUtils>.
+Returns the array with all duplicate elements removed, like L<List::Util/uniq>.
 
 This method does not accept any arguments.
 
@@ -307,7 +310,7 @@ This method accepts one or two arguments.
 =item * B<natatime($n, $code)>
 
 This method returns an iterator which, on each call, returns C<$n> more items
-from the array, in order, like C<natatime> from L<List::MoreUtils>.
+from the array, in order, like L<List::SomeUtils/natatime>.
 
 If you pass a coderef as the second argument, then this code ref will be
 called on each group of C<$n> elements in the array until the array is
@@ -376,7 +379,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

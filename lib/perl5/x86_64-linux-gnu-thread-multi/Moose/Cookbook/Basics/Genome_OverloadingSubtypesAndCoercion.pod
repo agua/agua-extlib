@@ -13,7 +13,7 @@ Moose::Cookbook::Basics::Genome_OverloadingSubtypesAndCoercion - Operator overlo
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -210,7 +210,7 @@ returns a new C<Human::EyeColor> object.
 Our original C<Human> class requires just a few changes to incorporate
 our new C<Human::EyeColor> class.
 
-  use List::MoreUtils qw( zip );
+  use List::SomeUtils qw( zip );
 
   coerce 'Human::EyeColor'
       => from 'ArrayRef'
@@ -243,7 +243,7 @@ If you'd like to learn more about overloading, please read the
 documentation for the L<overload> pragma.
 
 To see all the code we created together, take a look at
-F<t/recipes/basics_recipe9.t>.
+F<t/recipes/basics_genome_overloadingsubtypesandcoercion.t>.
 
 =head1 NEXT STEPS
 
@@ -262,12 +262,6 @@ Had this been a real project we'd probably want:
 =item Artificial Life
 
 =back
-
-=head1 LICENSE
-
-This work is licensed under a Creative Commons Attribution 3.0 Unported License.
-
-License details are at: L<http://creativecommons.org/licenses/by/3.0/>
 
 =head1 AUTHORS
 
@@ -317,9 +311,8 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This work is licensed under a Creative Commons Attribution 3.0 Unported License.
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+License details are at: L<http://creativecommons.org/licenses/by/3.0/>
 
 =cut

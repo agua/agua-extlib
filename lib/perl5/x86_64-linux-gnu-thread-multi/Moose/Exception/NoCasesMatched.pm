@@ -1,5 +1,5 @@
 package Moose::Exception::NoCasesMatched;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use Moose;
 extends 'Moose::Exception';
@@ -23,4 +23,5 @@ sub _build_message {
     return "No cases matched for $to_match";
 }
 
+__PACKAGE__->meta->make_immutable;
 1;

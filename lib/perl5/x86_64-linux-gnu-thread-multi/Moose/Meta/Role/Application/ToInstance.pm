@@ -1,5 +1,5 @@
 package Moose::Meta::Role::Application::ToInstance;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -17,7 +17,7 @@ __PACKAGE__->meta->add_attribute('rebless_params' => (
     Class::MOP::_definition_context(),
 ));
 
-use constant _NEED_OVERLOAD_HACK_FOR_OBJECTS => $] < 5.008009;
+use constant _NEED_OVERLOAD_HACK_FOR_OBJECTS => "$]" < 5.008009;
 
 sub apply {
     my ( $self, $role, $object, $args ) = @_;
@@ -64,7 +64,7 @@ Moose::Meta::Role::Application::ToInstance - Compose a role into an instance
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -134,7 +134,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

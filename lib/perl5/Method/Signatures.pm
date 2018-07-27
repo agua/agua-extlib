@@ -9,7 +9,7 @@ use Method::Signatures::Utils;
 use Method::Signatures::Parameter;
 use Method::Signatures::Signature;
 
-our $VERSION = '20141021';
+our $VERSION = '20170211';
 
 our $DEBUG = $ENV{METHOD_SIGNATURES_DEBUG} || 0;
 
@@ -26,6 +26,8 @@ sub my_hints() {
 
 Method::Signatures - method and function declarations with signatures and no source filter
 
+=for readme plugin version
+
 =head1 SYNOPSIS
 
     package Foo;
@@ -36,6 +38,8 @@ Method::Signatures - method and function declarations with signatures and no sou
         return bless {%args}, $self;
     }
 
+=for readme stop 
+
     method get ($key) {
         return $self->{$key};
     }
@@ -44,16 +48,21 @@ Method::Signatures - method and function declarations with signatures and no sou
         return $self->{$key} = $val;
     }
 
+=for readme start
+
     # Can also get type checking if you like:
 
     method set (Str $key, Int $val) {
         return $self->{$key} = $val;        # now you know $val is always an integer
     }
 
+=for readme stop
+
     func hello($greeting, $place) {
         print "$greeting, $place!\n";
     }
 
+=for readme start
 
 =head1 DESCRIPTION
 
@@ -68,6 +77,41 @@ a whole lot more.
 C<method> is like C<func> but specifically for making methods.  It will
 automatically provide the invocant as C<$self> (L<by default|/invocant>).
 No more C<my $self = shift>.
+
+=begin :readme
+
+=head1 INSTALLATION 
+
+This module sources are hosted on github 
+https://github.com/evalEmpire/method-signatures.git 
+and uses C<Module::Build> to generate the distribution. It can be 
+istalled:
+
+=over 
+
+=item directly
+
+ cpanm git://github.com/evalEmpire/method-signatures.git
+
+=item from CPAN
+
+ cpan Method::Signatures
+ cpanm Method::Signatures
+
+=item maualy cloninig the repository:
+
+ git clone https://github.com/evalEmpire/method-signatures.git
+ cd method-signatures
+ perl Build.PL
+ ./Build install 
+
+=back
+ 
+=for readme plugin requires
+
+=end :readme
+
+=for readme stop
 
 Also allows signatures, very similar to Perl 6 signatures.
 
@@ -418,6 +462,22 @@ default values have been resolved, and in the same order as they were
 specified within the signature.
 
 
+=head3 Placeholder parameters
+
+A positional argument can be ignored by using a bare C<$> sigil as its name.
+
+    method foo( $a, $, $c ) {
+        ...
+    }
+
+The argument's value doesn't get stored in a variable, but the caller must
+still supply it.  Value and type constraints can be applied to placeholders.
+
+    method bar( Int $ where { $_ < 10 } ) {
+        ...
+    }
+
+
 =head3 Parameter traits
 
 Each parameter can be assigned a trait with the C<$arg is TRAIT> syntax.
@@ -546,6 +606,10 @@ you can just write:
 
 This is also marginally more efficient, as it does not have to allocate,
 initialize, or deallocate the unused slurpy parameter C<@etc>.
+
+The bare C<@> sigil is a synonym for C<...>.  A bare C<%> sigil is also a
+synonym for C<...>, but requires that there must be an even number of extra
+arguments, such as would be assigned to a hash.
 
 
 =head3 Required and optional parameters
@@ -795,6 +859,49 @@ sub _parser_is_fucked {
 }
 
 
+# Largely copied from Devel::Declare::MethodInstaller::Simple::parser()
+# The original expects things in this order:
+# <keyword> name ($$@) :attr1 :attr2 {
+# * name
+# * prototype
+# * attributes
+# * an open brace
+# We want to support the prototype coming after the attributes as well as before,
+# but D::D::strip_attrs() looks for the open brace, and gets into an endless
+# loop if it doesn't find one.  Meanwhile, D::D::strip_proto() doesn't find anything
+# if the attributes are before the prototype.
+sub parser {
+    my $self = shift;
+    $self->init(@_);
+
+    $self->skip_declarator;
+    my $name   = $self->strip_name;
+
+    my $linestr = Devel::Declare::get_linestr;
+
+    my($proto, $attrs);
+    my($char) = $linestr =~ m/(\(|:)/;
+    if (defined($char) and $char eq '(') {
+        $proto = $self->strip_proto;
+        $attrs = $self->strip_attrs;
+    } else {
+        $attrs = $self->strip_attrs;
+        $proto = $self->strip_proto;
+    }
+
+    my @decl   = $self->parse_proto($proto);
+    my $inject = $self->inject_parsed_proto(@decl);
+    if (defined $name) {
+        $inject = $self->scope_injector_call() . $inject;
+    }
+    $self->inject_if_block($inject, $attrs ? "sub ${attrs} " : '');
+
+    $self->install( $name );
+
+    return;
+}
+
+
 # Capture the function name
 sub strip_name {
     my $self = shift;
@@ -807,10 +914,54 @@ sub strip_name {
 
 
 # Capture the attributes
+# A copy of the method of the same name from Devel::Declare::Context::Simple::strip_attrs()
+# The only change is that the while() loop now terminates if it finds an open brace _or_
+# open paren.  This is necessary to allow the function signature to come after the attributes.
 sub strip_attrs {
     my $self = shift;
 
-    my $attrs = $self->SUPER::strip_attrs(@_);
+    $self->skipspace;
+
+    my $linestr = Devel::Declare::get_linestr;
+    my $attrs   = '';
+
+    if (substr($linestr, $self->offset, 1) eq ':') {
+        while (substr($linestr, $self->offset, 1) ne '{'
+               and substr($linestr, $self->offset, 1) ne '('
+        ) {
+            if (substr($linestr, $self->offset, 1) eq ':') {
+                substr($linestr, $self->offset, 1) = '';
+                Devel::Declare::set_linestr($linestr);
+
+                $attrs .= ':';
+            }
+
+            $self->skipspace;
+            $linestr = Devel::Declare::get_linestr();
+
+            if (my $len = Devel::Declare::toke_scan_word($self->offset, 0)) {
+                my $name = substr($linestr, $self->offset, $len);
+                substr($linestr, $self->offset, $len) = '';
+                Devel::Declare::set_linestr($linestr);
+
+                $attrs .= " ${name}";
+
+                if (substr($linestr, $self->offset, 1) eq '(') {
+                    my $length = Devel::Declare::toke_scan_str($self->offset);
+                    my $arg    = Devel::Declare::get_lex_stuff();
+                    Devel::Declare::clear_lex_stuff();
+                    $linestr = Devel::Declare::get_linestr();
+                    substr($linestr, $self->offset, $length) = '';
+                    Devel::Declare::set_linestr($linestr);
+
+                    $attrs .= "(${arg})";
+                }
+            }
+        }
+
+        $linestr = Devel::Declare::get_linestr();
+    }
+
     $self->{attributes} = $attrs;
 
     return $attrs;
@@ -876,7 +1027,7 @@ sub inject_from_signature {
 
     my $max_argv = $signature->max_argv_size;
     my $max_args = $signature->max_args;
-    push @code, qq[$class->too_many_args_error($max_args) if \@_ > $max_argv; ]
+    push @code, qq[$class->too_many_args_error($max_args) if scalar(\@_) > $max_argv; ]
         unless $max_argv == $INF;
 
     # Add any additional trailing newlines so the body is on the right line.
@@ -891,6 +1042,13 @@ sub too_many_args_error {
     my($class, $max_args) = @_;
 
     $class->signature_error("was given too many arguments; it expects $max_args");
+}
+
+
+sub odd_number_args_error {
+    my($class) = @_;
+
+    $class->signature_error('was given an odd number of arguments for a placeholder hash');
 }
 
 
@@ -927,6 +1085,12 @@ sub inject_for_sig {
     # Add any necessary leading newlines so line numbers are preserved.
     push @code, $self->inject_newlines($sig->first_line_number - $self->{line_number});
 
+    if( $sig->is_hash_yadayada ) {
+        my $is_odd = $sig->position % 2;
+        push @code, qq[$class->odd_number_args_error() if scalar(\@_) % 2 != $is_odd;];
+        return @code;
+    }
+
     my $sigil = $sig->sigil;
     my $name  = $sig->variable_name;
     my $idx   = $sig->position;
@@ -948,7 +1112,7 @@ sub inject_for_sig {
         $sig->passed_in($rhs);
     }
 
-    my $check_exists = $sig->is_named ? "exists \$args{$name}" : "(\@_ > $idx)";
+    my $check_exists = $sig->is_named ? "exists \$args{$name}" : "( scalar(\@_) > $idx)";
     $sig->check_exists($check_exists);
 
     my $default = $sig->default;
@@ -972,7 +1136,11 @@ sub inject_for_sig {
     }
 
     if( $sig->is_required ) {
-        push @code, qq[${class}->required_arg('$var') unless $check_exists; ];
+        if( $sig->is_placeholder ) {
+            push @code, qq[${class}->required_placeholder_arg('$idx') unless $check_exists; ];
+        } else {
+            push @code, qq[${class}->required_arg('$var') unless $check_exists; ];
+        }
     }
 
     # Handle \@foo
@@ -1002,8 +1170,18 @@ sub inject_for_sig {
           $constraint =~ m{^ \s* \{ (?: .* ; .* | (?:(?! => ). )* ) \} \s* $}xs
                 ? "sub $constraint"
                 : $constraint;
-        my $error = sprintf q{ %s->where_error(%s, '%s', '%s') }, $class, $var, $var, $constraint;
+
+        my( $error_reporter, $var_name ) =
+            $sig->is_placeholder
+                ? ( 'placeholder_where_error',  $sig->position )
+                : ( 'where_error',              $var );
+        my $error = sprintf q{ %s->%s(%s, '%s', '%s') }, $class, $error_reporter, $var, $var_name, $constraint;
 		push @code, "$error unless do { no if \$] >= 5.017011, warnings => 'experimental::smartmatch'; grep { \$_ ~~ $constraint_impl } $var }; ";
+    }
+
+    if( $sig->is_placeholder ) {
+        unshift @code, 'do {';
+        push @code, '};';
     }
 
     # Record the current line number for the next injection.
@@ -1044,8 +1222,13 @@ sub inject_for_type_check
     if( $class->can("type_check") eq __PACKAGE__->can("type_check") ) {
         my $check = sprintf q[($%s::mutc{cache}{'%s'} ||= %s->_make_constraint('%s'))->check(%s)],
           __PACKAGE__, $sig->type, $class, $sig->type, $sig->variable;
-        my $error = sprintf q[%s->type_error('%s', %s, '%s') ],
-          $class, $sig->type, $sig->variable, $sig->variable_name;
+
+        my( $error_reporter, $variable_name ) =
+            $sig->is_placeholder
+                ? ( 'placeholder_type_error',   $sig->position )
+                : ( 'type_error',               $sig->variable_name );
+        my $error = sprintf q[%s->%s('%s', %s, '%s') ],
+          $class, $error_reporter, $sig->type, $sig->variable, $variable_name;
         my $code = "$error if ";
         $code .= "$check_exists && " if $check_exists;
         $code .= "!$check";
@@ -1082,6 +1265,13 @@ sub required_arg {
     my ($class, $var) = @_;
 
     $class->signature_error("missing required argument $var");
+}
+
+
+sub required_placeholder_arg {
+    my ($class, $idx) = @_;
+
+    $class->signature_error("missing required placeholder argument at position $idx");
 }
 
 
@@ -1174,6 +1364,13 @@ sub type_error
     $class->signature_error(qq{the '$name' parameter ($value) is not of type $type});
 }
 
+sub placeholder_type_error
+{
+    my ($class, $type, $value, $idx) = @_;
+    $value = defined $value ? qq{"$value"} : 'undef';
+    $class->signature_error(qq{the placeholder parameter at position $idx ($value) is not of type $type});
+}
+
 # Errors from `where' constraints are handled here.
 sub where_error
 {
@@ -1182,6 +1379,12 @@ sub where_error
     $class->signature_error(qq{$name value ($value) does not satisfy constraint: $constraint});
 }
 
+sub placeholder_where_error
+{
+    my ($class, $value, $idx, $constraint) = @_;
+    $value = defined $value ? qq{"$value"} : 'undef';
+    $class->signature_error(qq{the placeholder parameter at position $idx value ($value) does not satisfy constraint: $constraint});
+}
 
 =head1 PERFORMANCE
 
@@ -1386,7 +1589,7 @@ strict error, perl might not notice until it tries to compile
 something else via an C<eval> or C<require> at which point perl will
 appear to fail where there is no reason to fail.
 
-We recommend you use the L<compile_at_BEGIN> flag to turn off
+We recommend you use the L<"compile_at_BEGIN"> flag to turn off
 compile-time parsing.
 
 You can't use any feature that requires a smartmatch expression (i.e.

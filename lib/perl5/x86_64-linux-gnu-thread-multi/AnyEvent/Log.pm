@@ -1230,6 +1230,9 @@ Context names starting with a C<%> are anonymous contexts created when the
 name is first mentioned. The difference to package contexts is that by
 default they have no attached slaves.
 
+This makes it possible to create new log contexts that can be refered to
+multiple times by name within the same log specification.
+
 =item a perl package name
 
 Any other string references the logging context associated with the given

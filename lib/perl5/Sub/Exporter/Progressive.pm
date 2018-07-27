@@ -1,12 +1,14 @@
 package Sub::Exporter::Progressive;
-
+$Sub::Exporter::Progressive::VERSION = '0.001013';
 use strict;
 use warnings;
 
-our $VERSION = '0.001011';
+# ABSTRACT: Only use Sub::Exporter if you need it
 
-use Carp ();
-use List::Util ();
+sub _croak {
+  require Carp;
+  &Carp::croak;
+}
 
 sub import {
    my ($self, @args) = @_;
@@ -16,6 +18,7 @@ sub import {
 
    my $full_exporter;
    no strict 'refs';
+   no warnings 'once';
    @{"${inner_target}::EXPORT_OK"} = @{$export_data->{exports}};
    @{"${inner_target}::EXPORT"} = @{$export_data->{defaults}};
    %{"${inner_target}::EXPORT_TAGS"} = %{$export_data->{tags}};
@@ -23,14 +26,18 @@ sub import {
       use strict;
       my ($self, @args) = @_;
 
-      if (List::Util::first { ref || !m/ \A [:-]? \w+ \z /xm } @args) {
-         Carp::croak 'your usage of Sub::Exporter::Progressive requires Sub::Exporter to be installed'
+      if ( grep {
+         length ref $_
+            or
+         $_ !~ / \A [:-]? \w+ \z /xm
+      } @args ) {
+         _croak 'your usage of Sub::Exporter::Progressive requires Sub::Exporter to be installed'
             unless eval { require Sub::Exporter };
          $full_exporter ||= Sub::Exporter::build_exporter($export_data->{original});
 
          goto $full_exporter;
-      } elsif (defined(my $num = List::Util::first { !ref and m/^\d/ } @args)) {
-         die "cannot export symbols with a leading digit: '$num'";
+      } elsif ( defined( (my ($num) = grep { m/^\d/ } @args)[0] ) ) {
+         _croak "cannot export symbols with a leading digit: '$num'";
       } else {
          require Exporter;
          s/ \A - /:/xm for @args;
@@ -54,32 +61,36 @@ sub sub_export_options {
    my @defaults;
    my %tags;
 
-   if ($setup eq '-setup') {
+   if ( ($setup||'') eq '-setup') {
       my %options = %$options;
 
       OPTIONS:
       for my $opt (keys %options) {
          if ($opt eq 'exports') {
 
-            Carp::croak $too_complicated if ref $options{exports} ne 'ARRAY';
+            _croak $too_complicated if ref $options{exports} ne 'ARRAY';
             @exports = @{$options{exports}};
-            Carp::croak $too_complicated if List::Util::first { ref } @exports;
+            _croak $too_complicated if grep { length ref $_ } @exports;
 
          } elsif ($opt eq 'groups') {
             %tags = %{$options{groups}};
             for my $tagset (values %tags) {
-               Carp::croak $too_complicated if List::Util::first { / \A - (?! all \b ) /x || ref } @{$tagset};
+               _croak $too_complicated if grep {
+                  length ref $_
+                     or
+                  $_ =~ / \A - (?! all \b ) /x
+               } @{$tagset};
             }
             @defaults = @{$tags{default} || [] };
          } else {
-            Carp::croak $too_complicated;
+            _croak $too_complicated;
          }
       }
       @{$_} = map { / \A  [:-] all \z /x ? @exports : $_ } @{$_} for \@defaults, values %tags;
       $tags{all} ||= [ @exports ];
       my %exports = map { $_ => 1 } @exports;
       my @errors = grep { not $exports{$_} } @defaults;
-      Carp::croak join(', ', @errors) . " is not exported by the $inner_target module\n" if @errors;
+      _croak join(', ', @errors) . " is not exported by the $inner_target module\n" if @errors;
    }
 
    return {
@@ -92,11 +103,19 @@ sub sub_export_options {
 
 1;
 
-=encoding utf8
+__END__
+
+=pod
+
+=encoding UTF-8
 
 =head1 NAME
 
 Sub::Exporter::Progressive - Only use Sub::Exporter if you need it
+
+=head1 VERSION
+
+version 0.001013
 
 =head1 SYNOPSIS
 
@@ -133,10 +152,6 @@ C<%EXPORT_TAGS> package variables for C<Exporter> to work.  Additionally, if
 your package uses advanced C<Sub::Exporter> features like currying, this module
 will only ever use C<Sub::Exporter>, so you might as well use it directly.
 
-=head1 AUTHOR
-
-frew - Arthur Axel Schmidt (cpan:FREW) <frioux+cpan@gmail.com>
-
 =head1 CONTRIBUTORS
 
 ilmari - Dagfinn Ilmari Mannsåker (cpan:ILMARI) <ilmari@ilmari.org>
@@ -145,14 +160,15 @@ mst - Matt S. Trout (cpan:MSTROUT) <mst@shadowcat.co.uk>
 
 leont - Leon Timmermans (cpan:LEONT) <leont@cpan.org>
 
-=head1 COPYRIGHT
+=head1 AUTHOR
 
-Copyright (c) 2012 the Sub::Exporter::Progressive L</AUTHOR> and
-L</CONTRIBUTORS> as listed above.
+Arthur Axel "fREW" Schmidt <Sub-Exporter-Progressive@afoolishmanifesto.com>
 
-=head1 LICENSE
+=head1 COPYRIGHT AND LICENSE
 
-This library is free software and may be distributed under the same terms
-as perl itself.
+This software is copyright (c) 2016 by Arthur Axel "fREW" Schmidt.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

@@ -1,5 +1,5 @@
 package Moose::Meta::Attribute::Native::Trait::Hash;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use Moose::Role;
 with 'Moose::Meta::Attribute::Native::Trait';
@@ -24,7 +24,7 @@ Moose::Meta::Attribute::Native::Trait::Hash - Helper trait for HashRef attribute
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -112,7 +112,10 @@ This method does not accept any arguments.
 
 =head2 elements
 
-Returns the key/value pairs in the hash as a flattened list..
+In list context, this returns the key/value pairs in the hash.
+
+In scalar context, this returns the count of keys plus values.  In other words,
+it's the same as L<keys> times two.
 
 This method does not accept any arguments.
 
@@ -216,7 +219,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

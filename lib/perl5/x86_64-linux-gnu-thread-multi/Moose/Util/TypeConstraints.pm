@@ -1,5 +1,5 @@
 package Moose::Util::TypeConstraints;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use Carp ();
 use Scalar::Util qw( blessed );
@@ -407,12 +407,12 @@ sub coerce {
 #
 # If as() returns all its extra arguments, this just works, and
 # preserves backwards compatibility.
-sub as { { as => shift }, @_ }
-sub where (&)       { { where       => $_[0] } }
-sub message (&)     { { message     => $_[0] } }
-sub inline_as (&)   { { inline_as   => $_[0] } }
+sub as { +{ as => shift }, @_ }
+sub where (&)       { +{ where       => $_[0] } }
+sub message (&)     { +{ message     => $_[0] } }
+sub inline_as (&)   { +{ inline_as   => $_[0] } }
 
-sub from    {@_}
+sub from    { @_ }
 sub via (&) { $_[0] }
 
 sub enum {
@@ -770,7 +770,7 @@ Moose::Util::TypeConstraints - Type constraint system for Moose
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -895,7 +895,7 @@ name> which is a role, like C<'MyApp::Role::Comparable'>.
 
 =head2 Type Constraint Naming
 
-Type name declared via this module can only contain alphanumeric
+Type names declared via this module can only contain alphanumeric
 characters, colons (:), and periods (.).
 
 Since the types created by this module are global, it is suggested
@@ -1435,7 +1435,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

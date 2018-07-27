@@ -1,12 +1,12 @@
 package Moose::Exporter;
-our $VERSION = '2.1603';
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
 use Class::Load qw(is_class_loaded);
 use Class::MOP;
-use List::MoreUtils qw( first_index uniq );
+use List::Util 1.45 qw( uniq );
 use Moose::Util::MetaRole;
 use Scalar::Util 1.11 qw(reftype);
 use Sub::Exporter 0.980;
@@ -528,42 +528,30 @@ sub _make_import_sub {
     };
 }
 
+sub _strip_option {
+    my $option_name = shift;
+    my $default = shift;
+    for my $i ( 0 .. $#_ - 1 ) {
+        if (($_[$i] || '') eq $option_name) {
+            (undef, my $value) = splice @_, $i, 2;
+            return ( $value, @_ );
+        }
+    }
+    return ( $default, @_ );
+}
+
 sub _strip_traits {
-    my $idx = first_index { ( $_ || '' ) eq '-traits' } @_;
-
-    return ( [], @_ ) unless $idx >= 0 && $#_ >= $idx + 1;
-
-    my $traits = $_[ $idx + 1 ];
-
-    splice @_, $idx, 2;
-
-    $traits = [$traits] unless ref $traits;
-
-    return ( $traits, @_ );
+    my ($traits, @other) = _strip_option('-traits', [], @_);
+    $traits = ref $traits ? $traits : [ $traits ];
+    return ( $traits, @other );
 }
 
 sub _strip_metaclass {
-    my $idx = first_index { ( $_ || '' ) eq '-metaclass' } @_;
-
-    return ( undef, @_ ) unless $idx >= 0 && $#_ >= $idx + 1;
-
-    my $metaclass = $_[ $idx + 1 ];
-
-    splice @_, $idx, 2;
-
-    return ( $metaclass, @_ );
+    _strip_option('-metaclass', undef, @_);
 }
 
 sub _strip_meta_name {
-    my $idx = first_index { ( $_ || '' ) eq '-meta_name' } @_;
-
-    return ( 'meta', @_ ) unless $idx >= 0 && $#_ >= $idx + 1;
-
-    my $meta_name = $_[ $idx + 1 ];
-
-    splice @_, $idx, 2;
-
-    return ( $meta_name, @_ );
+    _strip_option('-meta_name', 'meta', @_);
 }
 
 sub _apply_metaroles {
@@ -705,7 +693,7 @@ sub _make_unimport_sub {
     my $meta_lookup       = shift;
 
     return sub {
-        my $caller = scalar caller();
+        my $caller = _get_caller(@_);
         Moose::Exporter->_remove_keywords(
             $caller,
             [ keys %{$exports} ],
@@ -808,7 +796,7 @@ Moose::Exporter - make an import() and unimport() just like Moose.pm
 
 =head1 VERSION
 
-version 2.1603
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -1053,7 +1041,7 @@ Matt S Trout <mst@shadowcat.co.uk>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2006 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
