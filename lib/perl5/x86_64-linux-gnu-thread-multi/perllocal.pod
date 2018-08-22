@@ -1,0 +1,2772 @@
+=head2 Fri Jul 27 02:44:06 2018: C<Module> L<install|install>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:44:56 2018: C<Module> L<Convert::Binary::C|Convert::Binary::C>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.78>
+
+=item *
+
+C<EXE_FILES: bin/ccconfig>
+
+=back
+
+=head2 Fri Jul 27 02:44:57 2018: C<Module> L<install|install>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:44:58 2018: C<Module> L<Canary::Stability|Canary::Stability>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2012>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:45:06 2018: C<Module> L<AnyEvent|AnyEvent>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 7.14>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:45:09 2018: C<Module> L<Guard|Guard>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.023>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:45:10 2018: C<Module> L<common::sense|common::sense>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 3.74>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:45:12 2018: C<Module> L<Coro|Coro>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 6.514>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:11 2018: C<Module> L<DBI|DBI>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.641>
+
+=item *
+
+C<EXE_FILES: dbilogstrip dbiprof dbiproxy>
+
+=back
+
+=head2 Fri Jul 27 02:46:13 2018: C<Module> L<Test::Warnings|Test::Warnings>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.026>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:16 2018: C<Module> L<Path::Tiny|Path::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.106>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:17 2018: C<Module> L<Try::Tiny|Try::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.30>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:18 2018: C<Module> L<Test::Fatal|Test::Fatal>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.014>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:20 2018: C<Module> L<Test::Deep|Test::Deep>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.128>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:21 2018: C<Module> L<Test::utf8|Test::utf8>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:22 2018: C<Module> L<Test::File|Test::File>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.443>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:23 2018: C<Module> L<File::Copy::Recursive|File::Copy::Recursive>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.44>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:28 2018: C<Module> L<File::Remove|File::Remove>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.57>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:46:30 2018: C<Module> L<FindBin::Real|FindBin::Real>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.05>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:04 2018: C<Module> L<Test::Pod|Test::Pod>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.52>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:08 2018: C<Module> L<JSON|JSON>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.97001>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:11 2018: C<Module> L<Sub::Name|Sub::Name>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.21>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:13 2018: C<Module> L<ExtUtils::Config|ExtUtils::Config>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.008>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:14 2018: C<Module> L<ExtUtils::Helpers|ExtUtils::Helpers>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.026>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:15 2018: C<Module> L<ExtUtils::InstallPaths|ExtUtils::InstallPaths>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.012>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:17 2018: C<Module> L<Sub::Exporter::Progressive|Sub::Exporter::Progressive>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.001013>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:19 2018: C<Module> L<ExtUtils::Depends|ExtUtils::Depends>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.405>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:20 2018: C<Module> L<B::Hooks::OP::Check|B::Hooks::OP::Check>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.22>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:23 2018: C<Module> L<Test::Requires|Test::Requires>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.10>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:24 2018: C<Module> L<Module::Implementation|Module::Implementation>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.09>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:27 2018: C<Module> L<Variable::Magic|Variable::Magic>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.62>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:28 2018: C<Module> L<B::Hooks::EndOfScope|B::Hooks::EndOfScope>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.24>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:30 2018: C<Module> L<Devel::Declare|Devel::Declare>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.006019>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:33 2018: C<Module> L<Sub::Uplevel|Sub::Uplevel>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.2800>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:35 2018: C<Module> L<Test::Warn|Test::Warn>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.36>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:47:36 2018: C<Module> L<Test::Exception|Test::Exception>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.43>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:01 2018: C<Module> L<Capture::Tiny|Capture::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.48>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:03 2018: C<Module> L<File::Copy::Recursive::Reduced|File::Copy::Recursive::Reduced>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.006>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:10 2018: C<Module> L<Devel::PPPort|Devel::PPPort>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 3.42>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:13 2018: C<Module> L<Test::Output|Test::Output>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.031>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:14 2018: C<Module> L<Test::LeakTrace|Test::LeakTrace>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.16>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:46 2018: C<Module> L<Class::Inspector|Class::Inspector>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.32>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:47 2018: C<Module> L<Task::Weaken|Task::Weaken>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.06>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:48 2018: C<Module> L<Clone|Clone>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.39>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:49 2018: C<Module> L<Exporter::Tiny|Exporter::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.002001>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:48:58 2018: C<Module> L<List::MoreUtils::XS|List::MoreUtils::XS>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.428>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:09 2018: C<Module> L<List::MoreUtils|List::MoreUtils>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.428>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:11 2018: C<Module> L<Params::Util|Params::Util>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.07>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:12 2018: C<Module> L<Hook::LexWrap|Hook::LexWrap>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.26>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:12 2018: C<Module> L<Test::SubCalls|Test::SubCalls>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.10>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:13 2018: C<Module> L<IO::String|IO::String>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.08>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:14 2018: C<Module> L<Test::Object|Test::Object>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.08>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:35 2018: C<Module> L<PPI|PPI>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.236>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:37 2018: C<Module> L<Any::Moose|Any::Moose>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.27>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:46 2018: C<Module> L<Method::Signatures::Simple|Method::Signatures::Simple>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.07>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:47 2018: C<Module> L<Dist::CheckConflicts|Dist::CheckConflicts>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.11>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:50 2018: C<Module> L<Package::Stash::XS|Package::Stash::XS>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.28>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:51 2018: C<Module> L<Package::Stash|Package::Stash>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.37>
+
+=item *
+
+C<EXE_FILES: bin/package-stash-conflicts>
+
+=back
+
+=head2 Fri Jul 27 02:49:52 2018: C<Module> L<MRO::Compat|MRO::Compat>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.13>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:53 2018: C<Module> L<Sub::Identify|Sub::Identify>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.14>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:54 2018: C<Module> L<Devel::OverloadInfo|Devel::OverloadInfo>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.005>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:56 2018: C<Module> L<Eval::Closure|Eval::Closure>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.14>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:57 2018: C<Module> L<Module::Runtime::Conflicts|Module::Runtime::Conflicts>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.003>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:49:58 2018: C<Module> L<CPAN::Meta::Check|CPAN::Meta::Check>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.014>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:00 2018: C<Module> L<Sub::Install|Sub::Install>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.928>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:00 2018: C<Module> L<Data::OptList|Data::OptList>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.110>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:02 2018: C<Module> L<Test::Needs|Test::Needs>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.002005>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:04 2018: C<Module> L<Class::Load|Class::Load>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.25>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:05 2018: C<Module> L<Class::Load::XS|Class::Load::XS>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.10>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:06 2018: C<Module> L<Devel::StackTrace|Devel::StackTrace>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.03>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:07 2018: C<Module> L<Package::DeprecationManager|Package::DeprecationManager>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.17>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:10 2018: C<Module> L<namespace::clean|namespace::clean>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.27>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:11 2018: C<Module> L<Role::Tiny|Role::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.000006>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:12 2018: C<Module> L<File::pushd|File::pushd>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.016>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:14 2018: C<Module> L<Sub::Exporter|Sub::Exporter>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.987>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:15 2018: C<Module> L<Test::CleanNamespaces|Test::CleanNamespaces>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.23>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:50:16 2018: C<Module> L<Devel::GlobalDestruction|Devel::GlobalDestruction>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.14>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:51:29 2018: C<Module> L<Moose|Moose>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.2011>
+
+=item *
+
+C<EXE_FILES: bin/moose-outdated>
+
+=back
+
+=head2 Fri Jul 27 02:51:35 2018: C<Module> L<namespace::autoclean|namespace::autoclean>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.28>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:51:37 2018: C<Module> L<MooseX::Role::WithOverloading|MooseX::Role::WithOverloading>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.17>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:51:46 2018: C<Module> L<Carp::Clan|Carp::Clan>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 6.06>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:51:46 2018: C<Module> L<Sub::Exporter::ForMethods|Sub::Exporter::ForMethods>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.100052>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:51:52 2018: C<Module> L<Class::Tiny|Class::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.006>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:51:52 2018: C<Module> L<Devel::PartialDump|Devel::PartialDump>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.20>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:51:54 2018: C<Module> L<Sub::Quote|Sub::Quote>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.005001>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:01 2018: C<Module> L<Specio|Specio>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.42>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:03 2018: C<Module> L<File::ShareDir::Install|File::ShareDir::Install>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.13>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:05 2018: C<Module> L<IPC::Run3|IPC::Run3>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.048>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:08 2018: C<Module> L<Importer|Importer>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.025>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:08 2018: C<Module> L<Scope::Guard|Scope::Guard>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.21>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:28 2018: C<Module> L<Test::Simple|Test::Simple>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.302138>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:29 2018: C<Module> L<Term::Table|Term::Table>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.012>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:30 2018: C<Module> L<Sub::Info|Sub::Info>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.002>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:32 2018: C<Module> L<Module::Pluggable|Module::Pluggable>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 5.2>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:43 2018: C<Module> L<Test2::Suite|Test2::Suite>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.000115>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:44 2018: C<Module> L<Test2::Plugin::NoWarnings|Test2::Plugin::NoWarnings>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.06>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:46 2018: C<Module> L<Test::Without::Module|Test::Without::Module>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.20>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:47 2018: C<Module> L<Class::Data::Inheritable|Class::Data::Inheritable>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.08>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:47 2018: C<Module> L<Exception::Class|Exception::Class>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.44>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:50 2018: C<Module> L<Params::ValidationCompiler|Params::ValidationCompiler>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.27>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:51 2018: C<Module> L<IPC::System::Simple|IPC::System::Simple>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.25>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:53 2018: C<Module> L<File::ShareDir|File::ShareDir>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.116>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:52:54 2018: C<Module> L<Test::File::ShareDir|Test::File::ShareDir>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.001002>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:53:04 2018: C<Module> L<DateTime::Locale|DateTime::Locale>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.22>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:53:05 2018: C<Module> L<Class::Singleton|Class::Singleton>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.5>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:53:08 2018: C<Module> L<DateTime::TimeZone|DateTime::TimeZone>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.19>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:53:22 2018: C<Module> L<DateTime|DateTime>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.49>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:53:33 2018: C<Module> L<Algorithm::Diff|Algorithm::Diff>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.1903>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:53:33 2018: C<Module> L<Text::Diff|Text::Diff>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.45>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:53:37 2018: C<Module> L<Parse::Method::Signatures|Parse::Method::Signatures>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.003019>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:53:38 2018: C<Module> L<Context::Preserve|Context::Preserve>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.03>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:53:39 2018: C<Module> L<MooseX::Meta::TypeConstraint::ForceCoercion|MooseX::Meta::TypeConstraint::ForceCoercion>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:54:05 2018: C<Module> L<PadWalker|PadWalker>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.3>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:54:07 2018: C<Module> L<PerlIO::eol|PerlIO::eol>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.17>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:54:09 2018: C<Module> L<Term::ReadKey|Term::ReadKey>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.37>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:54:47 2018: C<Module> L<threads|threads>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.21>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:54:50 2018: C<Module> L<B::Hooks::OP::PPAddr|B::Hooks::OP::PPAddr>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.06>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:54:59 2018: C<Module> L<Scope::Upper|Scope::Upper>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.30>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:55:03 2018: C<Module> L<TryCatch|TryCatch>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.003002>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:55:06 2018: C<Module> L<YAML::Tiny|YAML::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.73>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:55:06 2018: C<Module> L<install|install>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:55:10 2018: C<Module> L<Net::RabbitMQ|Net::RabbitMQ>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.2.8>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:55:11 2018: C<Module> L<Acme::Damn|Acme::Damn>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.08>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:55:13 2018: C<Module> L<Mock::Config|Mock::Config>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.03>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:55:14 2018: C<Module> L<IO::CaptureOutput|IO::CaptureOutput>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.1104>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Fri Jul 27 02:55:16 2018: C<Module> L<Devel::CheckLib|Devel::CheckLib>
+
+=over 4
+
+=item *
+
+C<installed into: /mnt/repos/agua/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.13>
+
+=item *
+
+C<EXE_FILES: bin/use-devel-checklib>
+
+=back
+
