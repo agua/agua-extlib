@@ -3122,3 +3122,91 @@ C<EXE_FILES: bin/use-devel-checklib>
 
 =back
 
+=head2 Tue Aug 28 10:29:30 2018: C<Module> L<install|install>
+
+=over 4
+
+=item *
+
+C<installed into: /home/stuart.young/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Tue Aug 28 10:35:56 2018: C<Module> L<Cwd|Cwd>
+
+=over 4
+
+=item *
+
+C<installed into: /home/stuart.young/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 3.74>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Tue Aug 28 10:36:59 2018: C<Module> L<DBD::SQLite|DBD::SQLite>
+
+=over 4
+
+=item *
+
+C<installed into: /home/stuart.young/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.58>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Tue Aug 28 10:38:45 2018: C<Module> L<File::Sort|File::Sort>
+
+=over 4
+
+=item *
+
+C<installed into: /home/stuart.young/flow/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.01>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
