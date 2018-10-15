@@ -3210,3 +3210,47 @@ C<EXE_FILES: >
 
 =back
 
+=head2 Mon Oct 15 08:31:56 2018: C<Module> L<Digest|Digest>
+
+=over 4
+
+=item *
+
+C<installed into: /b/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.17>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Mon Oct 15 08:39:24 2018: C<Module> L<Digest::MD5|Digest::MD5>
+
+=over 4
+
+=item *
+
+C<installed into: /b/extlib/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.55>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
