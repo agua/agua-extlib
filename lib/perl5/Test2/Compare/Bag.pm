@@ -4,9 +4,9 @@ use warnings;
 
 use base 'Test2::Compare::Base';
 
-our $VERSION = '0.000115';
+our $VERSION = '0.000126';
 
-use Test2::Util::HashBase qw/ending items/;
+use Test2::Util::HashBase qw/ending meta items for_each/;
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype looks_like_number/;
@@ -14,12 +14,15 @@ use Scalar::Util qw/reftype looks_like_number/;
 sub init {
     my $self = shift;
 
-    $self->{+ITEMS} ||= [];
+    $self->{+ITEMS}    ||= [];
+    $self->{+FOR_EACH} ||= [];
 
     $self->SUPER::init();
 }
 
 sub name { '<BAG>' }
+
+sub meta_class  { 'Test2::Compare::Meta' }
 
 sub verify {
     my $self = shift;
@@ -32,12 +35,23 @@ sub verify {
     return 1;
 }
 
+sub add_prop {
+    my $self = shift;
+    $self->{+META} = $self->meta_class->new unless defined $self->{+META};
+    $self->{+META}->add_prop(@_);
+}
+
 sub add_item {
     my $self = shift;
     my $check = pop;
     my ($idx) = @_;
 
     push @{$self->{+ITEMS}}, $check;
+}
+
+sub add_for_each {
+    my $self = shift;
+    push @{$self->{+FOR_EACH}} => @_;
 }
 
 sub deltas {
@@ -48,10 +62,14 @@ sub deltas {
     my @deltas;
     my $state = 0;
     my @items = @{$self->{+ITEMS}};
+    my @for_each = @{$self->{+FOR_EACH}};
 
     # Make a copy that we can munge as needed.
     my @list = @$got;
     my %unmatched = map { $_ => $list[$_] } 0..$#list;
+
+    my $meta     = $self->{+META};
+    push @deltas => $meta->deltas(%params) if defined $meta;
 
     while (@items) {
         my $item = shift @items;
@@ -84,6 +102,27 @@ sub deltas {
                 got      => undef,
                 check    => $check,
             );
+        }
+    }
+
+    if (@for_each) {
+        my @checks = map { $convert->($_) } @for_each;
+
+        for my $idx (0..$#list) {
+            # All items are matched if we have conditions for all items
+            delete $unmatched{$idx};
+
+            my $val = $list[$idx];
+
+            for my $check (@checks) {
+                push @deltas => $check->run(
+                    id      => [ARRAY => $idx],
+                    convert => $convert,
+                    seen    => $seen,
+                    exists  => 1,
+                    got     => $val,
+                );
+            }
         }
     }
 
@@ -136,7 +175,7 @@ more items than the check. That is, if you check for 4 items but the array has
 unexpected. If set to false then it is assumed you do not care about extra
 items.
 
-=item $hashref = $arr->items()
+=item $arrayref = $arr->items()
 
 Returns the arrayref of values to be checked in the array.
 

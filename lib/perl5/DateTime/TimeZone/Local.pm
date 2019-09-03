@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '2.19';
+our $VERSION = '2.36';
 
 use DateTime::TimeZone;
 use File::Spec;
@@ -30,22 +30,22 @@ sub TimeZone {
     # the non-existent modules if they feel a need, and release them
     # to CPAN separately.
     my %subclass = (
-        MSWin32 => 'Win32',
-        VMS     => 'VMS',
-        MacOS   => 'Mac',
-        os2     => 'OS2',
-        epoc    => 'Epoc',
-        NetWare => 'Win32',
-        symbian => 'Win32',
-        dos     => 'OS2',
         android => 'Android',
         cygwin  => 'Unix',
+        dos     => 'OS2',
+        epoc    => 'Epoc',
+        MacOS   => 'Mac',
+        MSWin32 => 'Win32',
+        NetWare => 'Win32',
+        os2     => 'OS2',
+        symbian => 'Win32',
+        VMS     => 'VMS',
     );
 
     sub _load_subclass {
         my $class = shift;
 
-        my $os_name = $subclass{$^O} || $^O;
+        my $os_name  = $subclass{$^O} || $^O;
         my $subclass = $class . '::' . $os_name;
 
         return $subclass if $subclass->can('Methods');
@@ -107,7 +107,7 @@ DateTime::TimeZone::Local - Determine the local system's time zone
 
 =head1 VERSION
 
-version 2.19
+version 2.36
 
 =head1 SYNOPSIS
 
@@ -138,8 +138,8 @@ will be used instead of falling back to the Unix subclass.
 If no OS-specific module exists, we fall back to using the Unix
 subclass.
 
-See L<DateTime::TimeZone::Local::Unix>,
-L<DateTime::TimeZone::Local::Win32>, and
+See L<DateTime::TimeZone::Local::Unix>, L<DateTime::TimeZone::Local::Android>,
+L<DateTime::TimeZone::Local::hpux>, L<DateTime::TimeZone::Local::Win32>, and
 L<DateTime::TimeZone::Local::VMS> for OS-specific details.
 
 =head1 SUBCLASSING
@@ -153,8 +153,8 @@ This method should be provided by your class. It should provide a list
 of methods that will be called to try to determine the local time
 zone.
 
-Each of these methods is expected to return a new
-C<DateTime::TimeZone> object if it determines the time zone.
+Each of these methods is expected to return a new C<DateTime::TimeZone> object
+if it can successfully determine the time zone.
 
 =head2 $class->FromEnv()
 
@@ -168,6 +168,9 @@ items from C<< $class->Methods() >>.
 
 This method should be provided by your subclass. It should return a
 list of env vars to be checked by C<< $class->FromEnv() >>.
+
+Your class should always include the C<TZ> key as one of the variables to
+check.
 
 =head2 $class->_IsValidName($name)
 
@@ -214,7 +217,7 @@ Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2018 by Dave Rolsky.
+This software is copyright (c) 2019 by Dave Rolsky.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

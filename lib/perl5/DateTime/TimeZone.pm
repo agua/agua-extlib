@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '2.19';
+our $VERSION = '2.36';
 
 use DateTime::TimeZone::Catalog;
 use DateTime::TimeZone::Floating;
@@ -21,7 +21,7 @@ use Specio::Library::String;
 use Try::Tiny;
 
 ## no critic (ValuesAndExpressions::ProhibitConstantPragma)
-use constant INFINITY => 100**1000;
+use constant INFINITY     => 100**1000;
 use constant NEG_INFINITY => -1 * ( 100**1000 );
 
 # the offsets for each span element
@@ -602,7 +602,7 @@ DateTime::TimeZone - Time zone object base class and factory
 
 =head1 VERSION
 
-version 2.19
+version 2.36
 
 =head1 SYNOPSIS
 
@@ -658,12 +658,12 @@ that time zone.
 
 There are also several special values that can be given as names.
 
-If the "name" parameter is "floating", then a
-C<DateTime::TimeZone::Floating> object is returned.  A floating time
-zone does have I<any> offset, and is always the same time.  This is
-useful for calendaring applications, which may need to specify that a
-given event happens at the same I<local> time, regardless of where it
-occurs.  See RFC 2445 for more details.
+If the "name" parameter is "floating", then a C<DateTime::TimeZone::Floating>
+object is returned.  A floating time zone does not have I<any> offset, and is
+always the same time.  This is useful for calendaring applications, which may
+need to specify that a given event happens at the same I<local> time,
+regardless of where it occurs. See L<RFC
+2445|https://www.ietf.org/rfc/rfc2445.txt> for more details.
 
 If the "name" parameter is "UTC", then a C<DateTime::TimeZone::UTC>
 object is returned.
@@ -684,13 +684,28 @@ zone.
 
 =item * L<DateTime::TimeZone::Local::Unix>
 
+=item * L<DateTime::TimeZone::Local::Android>
+
+=item * L<DateTime::TimeZone::Local::hpux>
+
 =item * L<DateTime::TimeZone::Local::Win32>
 
 =item * L<DateTime::TimeZone::Local::VMS>
 
 =back
 
-If a local time zone is not found, then an exception will be thrown.
+If a local time zone is not found, then an exception will be thrown. This
+exception will always stringify to something containing the text C<"Cannot
+determine local time zone">.
+
+If you are writing code for users to run on systems you do not control, you
+should try to account for the possibility that this exception may be
+thrown. Falling back to UTC might be a reasonable alternative.
+
+When writing tests for your modules that might be run on others' systems, you
+are strongly encouraged to either not use C<local> when creating L<DateTime>
+objects or to set C<$ENV{TZ}> to a known value in your test code. All of the
+per-OS classes check this environment variable.
 
 =head2 $tz->offset_for_datetime( $dt )
 
@@ -730,8 +745,8 @@ at both -0500 and +1000/+1100.
 
 =head2 $tz->is_floating
 
-Returns a boolean indicating whether or not this object represents a
-floating time zone, as defined by RFC 2445.
+Returns a boolean indicating whether or not this object represents a floating
+time zone, as defined by L<RFC 2445|https://www.ietf.org/rfc/rfc2445.txt>.
 
 =head2 $tz->is_utc
 
@@ -843,27 +858,6 @@ Starman), then you should try to load all the time zones that you'll need in
 the parent process. Time zones are loaded on-demand, so loading them once in
 each child will waste memory that could otherwise be shared.
 
-=head1 DONATIONS
-
-If you'd like to thank me for the work I've done on this module,
-please consider making a "donation" to me via PayPal. I spend a lot of
-free time creating free software, and would appreciate any support
-you'd care to offer.
-
-Please note that B<I am not suggesting that you must do this> in order
-for me to continue working on this particular software. I will
-continue to do so, inasmuch as I have in the past, for as long as it
-interests me.
-
-Similarly, a donation made in this way will probably not make me work
-on this software much more, unless I get so many donations that I can
-consider working on free software full time, which seems unlikely at
-best.
-
-To donate, log into PayPal and send money to autarch@urth.org or use
-the button on this page:
-L<http://www.urth.org/~autarch/fs-donation.html>
-
 =head1 CREDITS
 
 This module was inspired by Jesse Vincent's work on
@@ -921,7 +915,7 @@ Dave Rolsky <autarch@urth.org>
 
 =head1 CONTRIBUTORS
 
-=for stopwords Alexey Molchanov Alfie John Bron Gondwana Daisuke Maki David Pinkowitz Iain Truskett Jakub Wilk Joshua Hoblitt Karen Etheridge karupanerura Olaf Alders Peter Rabbitson Tom Wyant
+=for stopwords Alexey Molchanov Alfie John Andrew Paprocki Bron Gondwana Daisuke Maki David Pinkowitz Iain Truskett Jakub Wilk James E Keenan Joshua Hoblitt Karen Etheridge karupanerura Mohammad S Anwar Olaf Alders Peter Rabbitson Tom Wyant
 
 =over 4
 
@@ -932,6 +926,10 @@ Alexey Molchanov <alexey.molchanov@gmail.com>
 =item *
 
 Alfie John <alfiej@fastmail.fm>
+
+=item *
+
+Andrew Paprocki <apaprocki@bloomberg.net>
 
 =item *
 
@@ -955,6 +953,10 @@ Jakub Wilk <jwilk@jwilk.net>
 
 =item *
 
+James E Keenan <jkeenan@cpan.org>
+
+=item *
+
 Joshua Hoblitt <jhoblitt@cpan.org>
 
 =item *
@@ -964,6 +966,10 @@ Karen Etheridge <ether@cpan.org>
 =item *
 
 karupanerura <karupa@cpan.org>
+
+=item *
+
+Mohammad S Anwar <mohammad.anwar@yahoo.com>
 
 =item *
 
@@ -981,7 +987,7 @@ Tom Wyant <wyant@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2018 by Dave Rolsky.
+This software is copyright (c) 2019 by Dave Rolsky.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

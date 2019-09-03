@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '2.19';
+our $VERSION = '2.36';
 
 use Cwd 3;
 use Try::Tiny;
@@ -283,7 +283,7 @@ DateTime::TimeZone::Local::Unix - Determine the local system's time zone on Unix
 
 =head1 VERSION
 
-version 2.19
+version 2.36
 
 =head1 SYNOPSIS
 
@@ -343,6 +343,25 @@ If this file exists, it is opened and we look for a line starting like
 
 =back
 
+B<Note:> Some systems such as virtual machine boxes may lack any of these
+files. You can confirm that this is case by running:
+
+    $ ls -l /etc/localtime /etc/timezone /etc/TIMEZONE \
+        /etc/sysconfig/clock /etc/default/init
+
+If this is the case, then when checking for timezone handling you are
+likely to get an exception:
+
+    $ perl -wle 'use DateTime; DateTime->now( time_zone => "local" )'
+    Cannot determine local time zone
+
+In that case, you should consult your system F<man> pages for details on how
+to address that problem. In one such case reported to us, a FreeBSD virtual
+machine had been built without any of these files. The user was able to run
+the FreeBSD F<tzsetup> utility. That installed F</etc/localtime>, after which
+the above timezone diagnostic ran silently, I<i.e.>, without throwing an
+exception.
+
 =head1 SUPPORT
 
 Bugs may be submitted at L<https://github.com/houseabsolute/DateTime-TimeZone/issues>.
@@ -359,7 +378,7 @@ Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2018 by Dave Rolsky.
+This software is copyright (c) 2019 by Dave Rolsky.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

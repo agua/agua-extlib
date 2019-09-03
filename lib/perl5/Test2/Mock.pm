@@ -2,7 +2,7 @@ package Test2::Mock;
 use strict;
 use warnings;
 
-our $VERSION = '0.000115';
+our $VERSION = '0.000126';
 
 use Carp qw/croak confess/;
 our @CARP_NOT = (__PACKAGE__);
@@ -13,7 +13,7 @@ use Test2::Util::Stash qw/parse_symbol slot_to_sig get_symbol get_stash purge_sy
 use Test2::Util::Sub qw/gen_accessor gen_reader gen_writer/;
 
 sub new; # Prevent hashbase from giving us 'new';
-use Test2::Util::HashBase qw/class parent child _purge_on_destroy _blocked_load _symbols/;
+use Test2::Util::HashBase qw/class parent child _purge_on_destroy _blocked_load _symbols _track sub_tracking call_tracking/;
 
 sub new {
     my $class = shift;
@@ -22,6 +22,9 @@ sub new {
         if blessed($class);
 
     my $self = bless({}, $class);
+
+    $self->{+SUB_TRACKING}  ||= {};
+    $self->{+CALL_TRACKING} ||= [];
 
     my @sets;
     while (my $arg = shift @_) {
@@ -163,7 +166,7 @@ sub autoload {
     weaken(my $c = $self);
 
     my ($file, $line) = (__FILE__, __LINE__ + 3);
-    my $sub = eval <<EOT || die "Failed generating AUTOLOAD sub: $@";
+    my $autoload = eval <<EOT || die "Failed generating AUTOLOAD sub: $@";
 package $class;
 #line $line "$file (Generated AUTOLOAD)"
 our \$AUTOLOAD;
@@ -180,14 +183,19 @@ our \$AUTOLOAD;
         };
 
         \$c->add(\$name => \$sub);
+
+        if (\$c->{_track}) {
+            my \$call = {sub_name => \$name, sub_ref => \$sub, args => [\@_]};
+            push \@{\$c->{sub_tracking}->{\$name}} => \$call;
+            push \@{\$c->{call_tracking}} => \$call;
+        }
+
         goto &\$sub;
     }
 EOT
 
-    $self->add(AUTOLOAD => $sub);
-
     $line = __LINE__ + 3;
-    $sub = eval <<EOT || die "Failed generating can method: $@";
+    my $can = eval <<EOT || die "Failed generating can method: $@";
 package $class;
 #line $line "$file (Generated can)"
     sub {
@@ -202,7 +210,11 @@ package $class;
     }
 EOT
 
-    $self->add(can => $sub);
+    {
+        local $self->{+_TRACK} = 0;
+        $self->add(AUTOLOAD => $autoload);
+        $self->add(can => $can);
+    }
 }
 
 sub before {
@@ -210,7 +222,7 @@ sub before {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject(0, $name => sub { $sub->(@_); $orig->(@_) });
+    $self->_inject({}, $name => sub { $sub->(@_); $orig->(@_) });
 }
 
 sub after {
@@ -218,7 +230,7 @@ sub after {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject(0, $name => sub {
+    $self->_inject({}, $name => sub {
         my @out;
 
         my $want = wantarray;
@@ -246,19 +258,25 @@ sub around {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject(0, $name => sub { $sub->($orig, @_) });
+    $self->_inject({}, $name => sub { $sub->($orig, @_) });
 }
 
 sub add {
     my $self = shift;
     $self->_check();
-    $self->_inject(1, @_);
+    $self->_inject({add => 1}, @_);
 }
 
 sub override {
     my $self = shift;
     $self->_check();
-    $self->_inject(0, @_);
+    $self->_inject({}, @_);
+}
+
+sub set {
+    my $self = shift;
+    $self->_check();
+    $self->_inject({set => 1}, @_);
 }
 
 sub current {
@@ -285,6 +303,31 @@ sub orig {
     my ($orig) = @$ref;
 
     return $orig;
+}
+
+sub track {
+    my $self = shift;
+
+    ($self->{+_TRACK}) = @_ if @_;
+
+    return $self->{+_TRACK};
+}
+
+sub clear_call_tracking { @{shift->{+CALL_TRACKING}} = () }
+
+sub clear_sub_tracking {
+    my $self = shift;
+
+    unless (@_) {
+        %{$self->{+SUB_TRACKING}} = ();
+        return;
+    }
+
+    for my $item (@_) {
+        delete $self->{+SUB_TRACKING}->{$item};
+    }
+
+    return;
 }
 
 sub _parse_inject {
@@ -347,7 +390,10 @@ sub _parse_inject {
 
 sub _inject {
     my $self = shift;
-    my ($add, @pairs) = @_;
+    my ($params, @pairs) = @_;
+
+    my $add = $params->{add};
+    my $set = $params->{set};
 
     my $class = $self->{+CLASS};
 
@@ -360,7 +406,7 @@ sub _inject {
         my $orig = $self->current("$sig$sym");
 
         croak "Cannot override '$sig$class\::$sym', symbol is not already defined"
-            unless $orig || $add || ($sig eq '&' && $class->can($sym));
+            unless $orig || $add || $set || ($sig eq '&' && $class->can($sym));
 
         # Cannot be too sure about scalars in globs
         croak "Cannot add '$sig$class\::$sym', symbol is already defined"
@@ -369,6 +415,18 @@ sub _inject {
 
         $syms->{"$sig$sym"} ||= [];
         push @{$syms->{"$sig$sym"}} => $orig; # Might be undef, thats expected
+
+        if ($self->{+_TRACK} && $sig eq '&') {
+            my $sub_tracker  = $self->{+SUB_TRACKING};
+            my $call_tracker = $self->{+CALL_TRACKING};
+            my $sub = $ref;
+            $ref = sub {
+                my $call = {sub_name => $sym, sub_ref => $sub, args => [@_]};
+                push @{$sub_tracker->{$param}} => $call;
+                push @$call_tracker => $call;
+                goto &$sub;
+            };
+        }
 
         no strict 'refs';
         no warnings 'redefine';
@@ -485,6 +543,7 @@ the instance is destroyed it will restore the package to its original state.
     use MyClass;
 
     my $mock = Test2::Mock->new(
+        track => $BOOl, # enable call tracking if desired
         class => 'MyClass',
         override => [
             name => sub { 'fred' },
@@ -531,14 +590,72 @@ is identical to this:
     );
     $mock->add(foo => sub { 'foo' });
 
+=item $mock->track($bool)
+
+Turn tracking on or off. Any sub added/overriden/set when tracking is on will
+log every call in a hash retrievable via C<< $mock->tracking >>. Changing the
+tracking toggle will not effect subs already altered, but will effect any
+additional alterations.
+
+=item $hashref = $mock->sub_tracking
+
+The tracking data looks like this:
+
+    {
+        sub_name => [
+            {sub_name => $sub_name, sub_ref => $mock_subref, args => [... copy of @_ from the call ... ]},
+            ...,
+            ...,
+        ],
+    }
+
+Unlike call_tracking, this lists all calls by sub, so you can choose to only
+look at the sub specific calls.
+
+B<Please note:> The hashref items with the subname and args are shared with
+call_tracking, modifying one modifies the other, so copy first!
+
+=item $arrayref = $mock->call_tracking
+
+The tracking data looks like this:
+
+    [
+        {sub_name => $sub_name, sub_ref => $mock_subref, args => [... copy of @_ from the call ... ]},
+        ...,
+        ...,
+    ]
+
+unlike sub_tracking this lists all calls to any mocked sub, in the other they
+were called. To filter by sub use sub_tracking.
+
+B<Please note:> The hashref items with the subname and args are shared with
+sub_tracking, modifying one modifies the other, so copy first!
+
+=item $mock->clear_sub_tracking()
+
+=item $mock->clear_sub_tracking(\@subnames)
+
+Clear tracking data. With no arguments ALL tracking data is cleared. When
+arguments are provided then only those specific keys will be cleared.
+
+=item $mock->clear_call_tracking()
+
+Clear all items from call_tracking.
+
 =item $mock->add('symbol' => ..., 'symbol2' => ...)
 
 =item $mock->override('symbol1' => ..., 'symbol2' => ...)
+
+=item $mock->set('symbol1' => ..., 'symbol2' => ...)
 
 C<add()> and C<override()> are the primary ways to add/modify methods for a
 class. Both accept the exact same type of arguments. The difference is that
 C<override> will fail unless the symbol you are overriding already exists,
 C<add> on the other hand will fail if the symbol does already exist.
+
+C<set()> was more recently added for cases where you may not know if the sub
+already exists. These cases are rare, and set should be avoided (think of it
+like 'no strict'). However there are valid use cases, so it was added.
 
 B<Note:> Think of override as a push operation. If you call override on the
 same symbol multiple times it will track that. You can use C<restore()> as a
@@ -690,7 +807,7 @@ This gives you the chance to wrap the original sub:
         my (@args) = @_;
 
         ...
-        $orig->(@args);
+        $self->$orig(@args);
         ...
 
         return ...;

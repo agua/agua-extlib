@@ -1,0 +1,1 @@
+{"provides":{"Test2::Plugin::NoWarnings":{"version":"0.07","file":"lib/Test2/Plugin/NoWarnings.pm"},"Test2::Event::Warning":{"file":"lib/Test2/Event/Warning.pm","version":"0.07"}},"dist":"Test2-Plugin-NoWarnings-0.07","version":"0.07","target":"Test2::Plugin::NoWarnings","pathname":"D/DR/DROLSKY/Test2-Plugin-NoWarnings-0.07.tar.gz","name":"Test2::Plugin::NoWarnings"}

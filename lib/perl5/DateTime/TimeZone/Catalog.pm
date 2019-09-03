@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '2.19';
+our $VERSION = '2.36';
 
 our @ALL =
 qw(
@@ -228,6 +228,7 @@ qw(
   Asia/Pontianak
   Asia/Pyongyang
   Asia/Qatar
+  Asia/Qostanay
   Asia/Qyzylorda
   Asia/Riyadh
   Asia/Sakhalin
@@ -611,6 +612,7 @@ Oral
 Pontianak
 Pyongyang
 Qatar
+Qostanay
 Qyzylorda
 Riyadh
 Sakhalin
@@ -1223,6 +1225,7 @@ America/Cayman
   'kz' => [ qw(
 Asia/Almaty
 Asia/Qyzylorda
+Asia/Qostanay
 Asia/Aqtobe
 Asia/Aqtau
 Asia/Atyrau
@@ -1447,10 +1450,9 @@ Europe/Belgrade
   'ru' => [ qw(
 Europe/Kaliningrad
 Europe/Moscow
-Europe/Simferopol
-Europe/Volgograd
 Europe/Kirov
 Europe/Astrakhan
+Europe/Volgograd
 Europe/Saratov
 Europe/Ulyanovsk
 Europe/Samara
@@ -1588,6 +1590,7 @@ Asia/Taipei
 Africa/Dar_es_Salaam
 ) ],
   'ua' => [ qw(
+Europe/Simferopol
 Europe/Kiev
 Europe/Uzhgorod
 Europe/Zaporozhye
@@ -1897,7 +1900,7 @@ our %LINKS =
 
 ;
 
-sub OlsonVersion { '2018e' }
+sub OlsonVersion { '2019b' }
 
 
 1;
@@ -2132,6 +2135,7 @@ so that applications can easily present a list of timezones.
   Asia/Pontianak
   Asia/Pyongyang
   Asia/Qatar
+  Asia/Qostanay
   Asia/Qyzylorda
   Asia/Riyadh
   Asia/Samarkand
@@ -2651,6 +2655,10 @@ so that applications can easily present a list of timezones.
 
   Europe/Tallinn
 
+=head3 Eswatini (SZ)
+
+  Africa/Mbabane
+
 =head3 Ethiopia (ET)
 
   Africa/Addis_Ababa
@@ -2836,6 +2844,7 @@ so that applications can easily present a list of timezones.
 
   Asia/Almaty - Kazakhstan (most areas)
   Asia/Qyzylorda - Qyzylorda/Kyzylorda/Kzyl-Orda
+  Asia/Qostanay - Qostanay/Kostanay/Kustanay
   Asia/Aqtobe - Aqtobe/Aktobe
   Asia/Aqtau - Mangghystau/Mankistau
   Asia/Atyrau - Atyrau/Atirau/Gur'yev
@@ -3136,10 +3145,9 @@ so that applications can easily present a list of timezones.
 
   Europe/Kaliningrad - MSK-01 - Kaliningrad
   Europe/Moscow - MSK+00 - Moscow area
-  Europe/Simferopol - MSK+00 - Crimea
-  Europe/Volgograd - MSK+00 - Volgograd
   Europe/Kirov - MSK+00 - Kirov
   Europe/Astrakhan - MSK+01 - Astrakhan
+  Europe/Volgograd - MSK+01 - Volgograd
   Europe/Saratov - MSK+01 - Saratov
   Europe/Ulyanovsk - MSK+01 - Ulyanovsk
   Europe/Samara - MSK+01 - Samara, Udmurtia
@@ -3284,10 +3292,6 @@ so that applications can easily present a list of timezones.
 
   Arctic/Longyearbyen
 
-=head3 Swaziland (SZ)
-
-  Africa/Mbabane
-
 =head3 Sweden (SE)
 
   Europe/Stockholm
@@ -3308,7 +3312,7 @@ so that applications can easily present a list of timezones.
 
   Asia/Dushanbe
 
-=head3 Tanzania, United Republic of (TZ)
+=head3 Tanzania, the United Republic of (TZ)
 
   Africa/Dar_es_Salaam
 
@@ -3362,6 +3366,7 @@ so that applications can easily present a list of timezones.
 
 =head3 Ukraine (UA)
 
+  Europe/Simferopol - MSK+00 - Crimea
   Europe/Kiev - Ukraine (most areas)
   Europe/Uzhgorod - Ruthenia
   Europe/Zaporozhye - Zaporozh'ye/Zaporizhia; Lugansk/Luhansk (east)

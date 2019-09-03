@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '2.19';
+our $VERSION = '2.36';
 
 use DateTime::TimeZone::OlsonDB::Rule;
 use DateTime::TimeZone::OlsonDB::Zone;
@@ -96,7 +96,7 @@ sub _parse_zone {
     my $name = shift;
 
     my $expect = $name ? 5 : 6;
-    my @items = grep { defined && length } split /\s+/, $zone, $expect;
+    my @items  = grep { defined && length } split /\s+/, $zone, $expect;
 
     my %obs;
     unless ($name) {
@@ -178,7 +178,7 @@ sub rules_by_name {
 sub parse_day_spec {
     my ( $day, $month, $year ) = @_;
 
-    return $day if $day =~ /^\d+$/;
+    return ( $month, $day ) if $day =~ /^\d+$/;
 
     if ( $day =~ /^last(\w\w\w)$/ ) {
         my $dow = $DAYS{$1};
@@ -200,7 +200,7 @@ sub parse_day_spec {
             $dt -= $PLUS_ONE_DAY_DUR;
         }
 
-        return $dt->day;
+        return ( $dt->month, $dt->day );
     }
     elsif ( $day =~ /^(\w\w\w)([><])=(\d\d?)$/ ) {
         my $dow = $DAYS{$1};
@@ -218,7 +218,7 @@ sub parse_day_spec {
             $dt += $dur;
         }
 
-        return $dt->day;
+        return ( $dt->month, $dt->day );
     }
     else {
         die "Invalid on spec for rule: $day\n";
@@ -243,8 +243,8 @@ sub utc_datetime_for_time_spec {
     $second = 0 unless defined $second;
 
     my $add_day = 0;
-    if ( $hour == 24 ) {
-        $hour    = 0;
+    if ( $hour >= 24 ) {
+        $hour    = $hour - 24;
         $add_day = 1;
     }
 
@@ -300,7 +300,7 @@ DateTime::TimeZone::OlsonDB - An object to represent an Olson time zone database
 
 =head1 VERSION
 
-version 2.19
+version 2.36
 
 =head1 SYNOPSIS
 
@@ -349,7 +349,7 @@ Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2018 by Dave Rolsky.
+This software is copyright (c) 2019 by Dave Rolsky.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

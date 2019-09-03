@@ -3,9 +3,8 @@ package Test::Specio;
 use strict;
 use warnings;
 
-our $VERSION = '0.42';
+our $VERSION = '0.44';
 
-use B ();
 use IO::File;
 use Scalar::Util qw( blessed looks_like_number openhandle );
 use Specio::Library::Builtins;
@@ -75,7 +74,7 @@ our $CLASS_NAME = '_T::Thing';
     package _T::BoolOverload;
 
     use overload
-        'bool' => sub { ${ $_[0] } },
+        'bool'   => sub { ${ $_[0] } },
         fallback => 0;
 
     sub new {
@@ -91,7 +90,7 @@ our $BOOL_OVERLOAD_FALSE = _T::BoolOverload->new(0);
     package _T::StrOverload;
 
     use overload
-        q{""} => sub { ${ $_[0] } },
+        q{""}    => sub { ${ $_[0] } },
         fallback => 0;
 
     sub new {
@@ -128,7 +127,7 @@ our $NUM_OVERLOAD_NEG_DECIMAL = _T::NumOverload->new(42.42);
     package _T::CodeOverload;
 
     use overload
-        '&{}' => sub { ${ $_[0] } },
+        '&{}'    => sub { ${ $_[0] } },
         fallback => 0;
 
     sub new {
@@ -143,7 +142,7 @@ our $CODE_OVERLOAD = _T::CodeOverload->new( sub { } );
     package _T::RegexOverload;
 
     use overload
-        'qr' => sub { ${ $_[0] } },
+        'qr'     => sub { ${ $_[0] } },
         fallback => 0;
 
     sub new {
@@ -158,7 +157,7 @@ our $REGEX_OVERLOAD = _T::RegexOverload->new(qr/foo/);
     package _T::GlobOverload;
 
     use overload
-        '*{}' => sub { ${ $_[0] } },
+        '*{}'    => sub { ${ $_[0] } },
         fallback => 0;
 
     sub new {
@@ -171,7 +170,7 @@ our $REGEX_OVERLOAD = _T::RegexOverload->new(qr/foo/);
     package _T::ScalarOverload;
 
     use overload
-        '${}' => sub { $_[0][0] },
+        '${}'    => sub { $_[0][0] },
         fallback => 0;
 
     sub new {
@@ -186,7 +185,7 @@ our $SCALAR_OVERLOAD = _T::ScalarOverload->new('x');
     package _T::ArrayOverload;
 
     use overload
-        '@{}' => sub { $_[0]{array} },
+        '@{}'    => sub { $_[0]{array} },
         fallback => 0;
 
     sub new {
@@ -201,7 +200,7 @@ our $ARRAY_OVERLOAD = _T::ArrayOverload->new( [ 1, 2, 3 ] );
     package _T::HashOverload;
 
     use overload
-        '%{}' => sub { $_[0][0] },
+        '%{}'    => sub { $_[0][0] },
         fallback => 0;
 
     sub new {
@@ -224,7 +223,7 @@ BEGIN {
     }
 }
 
-our @EXPORT_OK = ( @vars, qw( builtins_tests describe test_constraint ) );
+our @EXPORT_OK   = ( @vars, qw( builtins_tests describe test_constraint ) );
 our %EXPORT_TAGS = ( vars => \@vars );
 
 sub builtins_tests {
@@ -1258,7 +1257,7 @@ sub describe {
         return q{''} if $val eq q{};
 
         return looks_like_number($val)
-            && $val !~ /\n/ ? $val : B::perlstring($val);
+            && $val !~ /\n/ ? $val : Specio::Helpers::perlstring($val);
     }
 
     return 'open filehandle'
@@ -1299,7 +1298,7 @@ Test::Specio - Test helpers for Specio
 
 =head1 VERSION
 
-version 0.42
+version 0.44
 
 =head1 SYNOPSIS
 
@@ -1549,7 +1548,7 @@ Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is Copyright (c) 2012 - 2017 by Dave Rolsky.
+This software is Copyright (c) 2012 - 2019 by Dave Rolsky.
 
 This is free software, licensed under:
 

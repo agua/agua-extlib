@@ -1,7 +1,7 @@
 {
   am_pm_abbreviated => [
-    "a. m.",
-    "p. m.",
+    "a.\N{U+00a0}m.",
+    "p.\N{U+00a0}m.",
   ],
   available_formats => {
     Bh => "h B",
@@ -33,8 +33,8 @@
     MMM => "LLL",
     MMMEd => "E, d MMM",
     MMMMEd => "E, d 'de' MMMM",
-    "MMMMW-count-one" => "'semana' W 'de' MMM",
-    "MMMMW-count-other" => "'semana' W 'de' MMM",
+    "MMMMW-count-one" => "'semana' W 'de' MMMM",
+    "MMMMW-count-other" => "'semana' W 'de' MMMM",
     MMMMd => "d 'de' MMMM",
     MMMd => "d MMM",
     MMd => "d/M",
@@ -61,8 +61,8 @@
     yMd => "d/M/y",
     yQQQ => "QQQ y",
     yQQQQ => "QQQQ 'de' y",
-    "yw-count-one" => "'semana' w 'de' y",
-    "yw-count-other" => "'semana' w 'de' y",
+    "yw-count-one" => "'semana' w 'de' Y",
+    "yw-count-other" => "'semana' w 'de' Y",
   },
   code => "es-EA",
   date_format_full => "EEEE, d 'de' MMMM 'de' y",
@@ -279,5 +279,5 @@
   time_format_medium => "H:mm:ss",
   time_format_short => "H:mm",
   variant => undef,
-  version => 33,
+  version => 35,
 }

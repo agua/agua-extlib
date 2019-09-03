@@ -6,10 +6,6 @@ package Test::Differences;
 
 Test::Differences - Test strings and data structures and show differences if not ok
 
-=head1 VERSION
-
-0.62
-
 =head1 SYNOPSIS
 
    use Test;    ## Or use Test::More
@@ -322,7 +318,7 @@ if you do this.
 
 =cut
 
-our $VERSION = "0.64"; # or "0.001_001" for a dev release
+our $VERSION = "0.67"; # or "0.001_001" for a dev release
 $VERSION = eval $VERSION;
 
 use Exporter;
@@ -339,6 +335,7 @@ use Exporter;
 );
 
 use strict;
+use warnings;
 
 use Carp;
 use Text::Diff;
@@ -410,6 +407,8 @@ sub eq_or_diff {
 
     my @widths;
 
+    local $Data::Dumper::Deparse   = 1
+        unless($Test::Differences::NoDeparse);
     local $Data::Dumper::Indent    = 1;
     local $Data::Dumper::Purity    = 0;
     local $Data::Dumper::Terse     = 1;
@@ -560,6 +559,16 @@ Yves Orton <demerphq@hotmail.com>.  The plan to address this is to allow
 you to select Data::Denter or some other module of your choice as an
 option.
 
+=head2 Code-refs
+
+Test::Differences turns on C<$Data::Dumper::Deparse>, so any code-refs in your
+data structures will be turned into text before they are examined, using
+L<B::Deparse>. The precise text generated for a sub-ref might not be what you
+expect as it is generated from the compiled version of the code, but it should
+at least be consistent and spot differences correctly.
+
+You can turn this behaviour off by setting C<$Test::Differences::NoDeparse>.
+
 =head1 AUTHORS
 
     Barrie Slaymaker <barries@slaysys.com> - original author
@@ -570,10 +579,12 @@ option.
 
 =head1 LICENSE
 
-Copyright 2001-2008 Barrie Slaymaker, All Rights Reserved.
+Copyright Barrie Slaymaker, Curtis "Ovid" Poe, and David Cantrell.
 
-You may use this software under the terms of the GNU public license, any
-version, or the Artistic license.
+All Rights Reserved.
+
+You may use, distribute and modify this software under the terms of the GNU
+public license, any version, or the Artistic license.
 
 =cut
 
